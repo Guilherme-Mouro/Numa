@@ -57,6 +57,4 @@ dependencies {
 
     implementation("com.jakewharton.threetenabp:threetenabp:1.4.4")
 
-    //BCrypt
-    implementation("org.mindrot:jbcrypt:0.4")
 }

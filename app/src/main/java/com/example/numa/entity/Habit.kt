@@ -1,10 +1,10 @@
-package com.example.numa.Entities
+package com.example.numa.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "pet", foreignKeys = [
+@Entity(tableName = "habit", foreignKeys = [
     ForeignKey(
         entity = User::class,
         parentColumns = ["id"],
@@ -13,13 +13,14 @@ import androidx.room.PrimaryKey
     )
 ])
 
-data class Pet(
+data class Habit (
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
 
-    val userId: Int,
-    val name: String,
-    val level: Int,
-    val humor: String,
-    val sprite: String,
+    val userID: Int,
+    val title: String,
+    val description: String,
+    val startTime: Long,
+    val endTime: Long,
+    val state: String,
 
     )
