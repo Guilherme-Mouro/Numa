@@ -49,10 +49,14 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
+    //ROOM
     val room_version = "2.7.2"
 
     implementation("androidx.room:room-runtime:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
 
     implementation("com.jakewharton.threetenabp:threetenabp:1.4.4")
+
+    //BCrypt
+    implementation("org.mindrot:jbcrypt:0.4")
 }
