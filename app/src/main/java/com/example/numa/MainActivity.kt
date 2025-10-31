@@ -1,14 +1,13 @@
 package com.example.numa
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import com.example.numa.databinding.ActivityMainBinding
+import com.example.numa.fragment.HabitFragment
 import com.example.numa.fragment.HomeFragment
+import com.example.numa.fragment.QuestFragment
+import com.example.numa.fragment.SleepFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,6 +23,9 @@ class MainActivity : AppCompatActivity() {
         binding.bottomNav.setOnItemSelectedListener {
             when(it.itemId) {
                 R.id.home -> changeMenuItem(HomeFragment())
+                R.id.habit -> changeMenuItem(HabitFragment())
+                R.id.sleep -> changeMenuItem(SleepFragment())
+                R.id.quest -> changeMenuItem(QuestFragment())
             }
             true
         }

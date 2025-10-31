@@ -7,8 +7,18 @@
         android:icon="@drawable/home_icon"/>
 
     <item
-        android:id="@+id/profile"
-        android:title="Profile"
+        android:id="@+id/habit"
+        android:title="Habit"
+        android:icon="@drawable/home_icon"/>
+
+    <item
+        android:id="@+id/sleep"
+        android:title="Sleep"
+        android:icon="@drawable/home_icon"/>
+
+    <item
+        android:id="@+id/quest"
+        android:title="Quest"
         android:icon="@drawable/home_icon"/>
 
 </menu>
