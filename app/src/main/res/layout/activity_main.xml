@@ -13,13 +13,19 @@
         android:id="@+id/frameLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="90"/>
+        android:layout_weight="88"/>
     
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="10"
+        android:layout_weight="12"
+        app:itemGravity="center"
+        android:background="@color/menu"
+        app:itemTextColor="@color/nav_text_color"
+        app:itemIconTint="@color/nav_icon_color"
+        app:labelVisibilityMode="labeled"
+        app:itemActiveIndicatorStyle="@android:color/transparent"
         app:menu="@menu/bottom_nav"/>
 
 </LinearLayout>

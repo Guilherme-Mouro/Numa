@@ -1,6 +1,7 @@
 package com.example.numa
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.numa.databinding.ActivityMainBinding
@@ -11,7 +12,8 @@ import com.example.numa.fragment.SleepFragment
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
+    private var lastSelectedView: View? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,22 +22,36 @@ class MainActivity : AppCompatActivity() {
 
         changeMenuItem(HomeFragment())
 
-        binding.bottomNav.setOnItemSelectedListener {
-            when(it.itemId) {
+        lastSelectedView = binding.bottomNav.findViewById(R.id.home)
+        resizeIcon(lastSelectedView, null)
+
+        binding.bottomNav.setOnItemSelectedListener { item ->
+            val selectedView = binding.bottomNav.findViewById<View>(item.itemId)
+
+            when (item.itemId) {
                 R.id.home -> changeMenuItem(HomeFragment())
                 R.id.habit -> changeMenuItem(HabitFragment())
                 R.id.sleep -> changeMenuItem(SleepFragment())
                 R.id.quest -> changeMenuItem(QuestFragment())
             }
+
+            resizeIcon(selectedView, lastSelectedView)
+            lastSelectedView = selectedView
+
             true
         }
     }
 
     private fun changeMenuItem(fragment: Fragment) {
-        val fragmentManager = supportFragmentManager
-        val fragmentTransaction = fragmentManager.beginTransaction()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.frameLayout, fragment)
+            .commit()
+    }
 
-        fragmentTransaction.replace(R.id.frameLayout, fragment)
-        fragmentTransaction.commit()
+
+    private fun resizeIcon(selectedView: View?, previousView: View?) {
+        previousView?.animate()?.scaleX(1f)?.scaleY(1f)?.setDuration(150)?.start()
+
+        selectedView?.animate()?.scaleX(1.3f)?.scaleY(1.3f)?.setDuration(200)?.start()
     }
 }
