@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/home"
+        android:title="Home"
+        android:icon="@drawable/ic_home"/>
+
+    <item
+        android:id="@+id/habit"
+        android:title="Habit"
+        android:icon="@drawable/ic_habit"/>
+
+    <item
+        android:id="@+id/sleep"
+        android:title="Sleep"
+        android:icon="@drawable/ic_moon"/>
+
+    <item
+        android:id="@+id/quest"
+        android:title="Quest"
+        android:icon="@drawable/ic_quest"/>
+
+</menu>

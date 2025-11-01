@@ -6,4 +6,5 @@
     </style>
 
     <style name="Theme.Numa" parent="Base.Theme.Numa" />
+
 </resources>

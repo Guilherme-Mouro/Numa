@@ -2,4 +2,19 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    //Main
+    <color name="background">#131E41</color>
+    <color name="items_background">#1D2D61</color>
+
+    //Menu
+    <color name="menu">#0F1832</color>
+
+    //Icons and Texts
+    <color name="light_blue">#4979D1</color>
+    <color name="light_grey">#BFBFBF</color>
+    <color name="yellow">#EBC351</color>
+    <color name="red">#EB3223</color>
+    <color name="green">#3DAF4A</color>
+
 </resources>
