@@ -16,11 +16,13 @@ import androidx.room.PrimaryKey
 data class Habit (
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
 
-    val userID: Int,
+    val userId: Int,
     val title: String,
     val description: String,
     val startTime: Long,
-    val endTime: Long,
+    val duration: Long,
+    val experience: Int,
+    val sequence: Int,
     val state: String,
 
     )

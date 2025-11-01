@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "pet", foreignKeys = [
+@Entity(tableName = "achievement", foreignKeys = [
     ForeignKey(
         entity = User::class,
         parentColumns = ["id"],
@@ -12,15 +12,12 @@ import androidx.room.PrimaryKey
         onDelete = ForeignKey.CASCADE
     )
 ])
-
-data class Pet(
+data class Achievement (
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
 
     val userId: Int,
-    val name: String,
-    val level: Int,
+    val title: String,
+    val date: Long,
+    val points: Int,
     val experience: Int,
-    val humor: String,
-    val sprite: String,
-
-    )
+)
