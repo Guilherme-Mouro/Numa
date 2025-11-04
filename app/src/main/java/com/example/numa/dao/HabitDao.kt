@@ -12,7 +12,7 @@ interface HabitDao {
     @Query("SELECT * FROM habit WHERE id = :habitId")
     suspend fun getHabitById(habitId: Int): Habit?
 
-    @Query("UPDATE habit SET title = :title, description = :description, startTime = :startTime, duration = :duration, experience = :experience, sequence = :sequence, state = :state WHERE id = :habitId")
+    @Query("UPDATE habit SET title = :title, description = :description, startTime = :startTime, duration = :duration, experience = :experience, streak = :streak, state = :state WHERE id = :habitId")
     suspend fun updateHabit(
         habitId: Int,
         title: String,
@@ -20,7 +20,7 @@ interface HabitDao {
         startTime: Long,
         duration: Long,
         experience: Int,
-        sequence: Int,
+        streak: Int,
         state: String
     )
 

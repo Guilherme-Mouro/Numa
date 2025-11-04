@@ -13,7 +13,6 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- Icon Placeholder -->
         <View
             android:id="@+id/vIconPlaceholder"
             android:layout_width="48dp"
@@ -23,7 +22,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Habit Title -->
         <TextView
             android:id="@+id/tvHabitTitle"
             android:layout_width="0dp"
@@ -37,7 +35,6 @@
             app:layout_constraintStart_toEndOf="@id/vIconPlaceholder"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Info Container -->
         <LinearLayout
             android:id="@+id/llInfo"
             android:layout_width="0dp"
@@ -49,7 +46,6 @@
             app:layout_constraintStart_toEndOf="@id/vIconPlaceholder"
             app:layout_constraintTop_toBottomOf="@id/tvHabitTitle">
 
-            <!-- Duration -->
             <ImageView
                 android:layout_width="16dp"
                 android:layout_height="16dp"
@@ -66,7 +62,6 @@
                 android:textColor="@color/light_grey"
                 android:textSize="14sp" />
 
-            <!-- Streak -->
             <ImageView
                 android:layout_width="16dp"
                 android:layout_height="16dp"
@@ -84,28 +79,32 @@
                 android:textColor="@color/light_grey"
                 android:textSize="14sp" />
 
-            <!-- XP -->
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            app:layout_constraintRight_toRightOf="parent">
+
+            <ImageView
+                android:id="@+id/ivLightning"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginBottom="10dp"
+                android:src="@drawable/ic_lightning"
+                app:tint="@color/yellow" />
+
             <TextView
                 android:id="@+id/tvXp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
                 android:text="+25 XP"
                 android:textColor="@color/light_grey"
                 android:textSize="14sp" />
 
         </LinearLayout>
-
-        <!-- Lightning Icon -->
-        <ImageView
-            android:id="@+id/ivLightning"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_lightning"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/yellow" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -12,8 +12,8 @@ interface UserDao {
     @Query("UPDATE user SET name = :username WHERE id = :userId")
     suspend fun updateUsername(userId: Int, username: String)
 
-    @Query("UPDATE user SET sequence = :sequence WHERE id = :userId")
-    suspend fun updateSequence(userId: Int, sequence: Int)
+    @Query("UPDATE user SET streak = :streak WHERE id = :userId")
+    suspend fun updateStreak(userId: Int, streak: Int)
 
     @Query("UPDATE user SET points = :points WHERE id = :userId")
     suspend fun updatePoints(userId: Int, points: Int)
