@@ -14,6 +14,7 @@ import com.example.numa.databinding.FragmentHabitBinding
 import androidx.room.Room
 import com.example.numa.dao.HabitDao
 import com.example.numa.entity.Habit
+import com.example.numa.util.SessionManager
 import kotlinx.coroutines.launch
 
 
@@ -47,11 +48,17 @@ class HabitFragment : Fragment() {
 
 
         lifecycleScope.launch {
-            val habits = db.habitDao().getHabitsByUser(1)
+            val sessionManager = SessionManager(requireContext())
+            val userId = sessionManager.getUserId()
 
-            habitsAdapter = HabitAdapter(habits)
-            binding.rvHabits.layoutManager = LinearLayoutManager(requireContext())
-            binding.rvHabits.adapter = habitsAdapter
+            if (userId != null) {
+                val habits = db.habitDao().getHabitsByUser(userId)
+
+                habitsAdapter = HabitAdapter(habits)
+                binding.rvHabits.layoutManager = LinearLayoutManager(requireContext())
+                binding.rvHabits.adapter = habitsAdapter
+            }
+
         }
 
 
