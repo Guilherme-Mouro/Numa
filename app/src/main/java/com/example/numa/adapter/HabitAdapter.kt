@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.numa.R
 import com.example.numa.entity.Habit
 
-class HabitAdapter(private var habits: List<Habit>): RecyclerView.Adapter<HabitAdapter.HabitViewHolder>() {
+class HabitAdapter(val habits: MutableList<Habit>) : RecyclerView.Adapter<HabitAdapter.HabitViewHolder>() {
 
     class HabitViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val title = itemView.findViewById<TextView>(R.id.tvHabitTitle)
@@ -33,4 +33,12 @@ class HabitAdapter(private var habits: List<Habit>): RecyclerView.Adapter<HabitA
 
     override fun getItemCount() = habits.size
 
+    fun removeItem(position: Int) {
+        habits.removeAt(position)
+        notifyItemRemoved(position)
+    }
+
+    fun getHabitAt(position: Int): Habit {
+        return habits[position]
+    }
 }
