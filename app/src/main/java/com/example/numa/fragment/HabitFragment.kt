@@ -5,21 +5,18 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.room.Room
 import com.example.numa.DataBase
 import com.example.numa.adapter.HabitAdapter
-import com.example.numa.databinding.FragmentHabitBinding
-import androidx.room.Room
 import com.example.numa.adapter.WeekAdapter
-import com.example.numa.dao.HabitDao
-import com.example.numa.entity.Habit
+import com.example.numa.databinding.FragmentHabitBinding
 import com.example.numa.util.SessionManager
 import kotlinx.coroutines.launch
 import org.threeten.bp.DayOfWeek
 import org.threeten.bp.LocalDate
-
+import org.threeten.bp.ZoneId
 
 class HabitFragment : Fragment() {
 
@@ -28,8 +25,6 @@ class HabitFragment : Fragment() {
     private lateinit var db: DataBase
     private lateinit var habitsAdapter: HabitAdapter
     private var selectedDay: LocalDate = LocalDate.now()
-
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,31 +44,42 @@ class HabitFragment : Fragment() {
             "NumaDB"
         ).fallbackToDestructiveMigration().build()
 
-
-        lifecycleScope.launch {
-            val sessionManager = SessionManager(requireContext())
-            val userId = sessionManager.getUserId()
-
-            userId?.let {
-                val habits = db.habitDao().getHabitsByUser(userId)
-
-                habitsAdapter = HabitAdapter(habits)
-                binding.rvHabits.layoutManager = LinearLayoutManager(requireContext())
-                binding.rvHabits.adapter = habitsAdapter
-            }
-
-        }
+        binding.rvHabits.layoutManager = LinearLayoutManager(requireContext())
 
         val weekDays = getCurrentWeek()
         val weekAdapter = WeekAdapter(weekDays) { selectedDate ->
             selectedDay = selectedDate
+            loadHabitsForDate(selectedDate)
         }
-
         binding.rvWeek.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         binding.rvWeek.adapter = weekAdapter
 
+        loadHabitsForDate(selectedDay)
+
         return binding.root
+    }
+
+    private fun loadHabitsForDate(date: LocalDate) {
+        lifecycleScope.launch {
+            val sessionManager = SessionManager(requireContext())
+            val userId = sessionManager.getUserId()
+
+            if (userId != null) {
+                val dayOfWeek = date.dayOfWeek.name
+                val specificDate =
+                    date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+
+                val habits = db.habitDao().getHabitsForDate(
+                    dayOfWeek = dayOfWeek,
+                    specificDate = specificDate,
+                    userId = userId
+                )
+
+                habitsAdapter = HabitAdapter(habits)
+                binding.rvHabits.adapter = habitsAdapter
+            }
+        }
     }
 
     private fun getCurrentWeek(): List<LocalDate> {

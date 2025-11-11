@@ -1,7 +1,6 @@
 package com.example.numa.fragment
 
 import android.os.Bundle
-import android.provider.ContactsContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,7 +17,6 @@ class AddHabitFragment : BottomSheetDialogFragment() {
 
     private var _binding: FragmentAddHabitBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var db: DataBase
 
     override fun onCreateView(
@@ -47,15 +45,18 @@ class AddHabitFragment : BottomSheetDialogFragment() {
                     duration = 60 * 60 * 1000L,
                     experience = 10,
                     streak = 0,
-                    state = "incomplete"
+                    state = "incomplete",
+                    isRecurring = true,
+                    dayOfWeek = "FRIDAY",
+                    specificDate = null
                 )
 
                 lifecycleScope.launch {
                     db.habitDao().insertHabit(newHabit)
+                    parentFragmentManager.setFragmentResult("habit_added", Bundle())
+                    dismiss()
                 }
             }
-
-            dismiss()
         }
 
         return binding.root

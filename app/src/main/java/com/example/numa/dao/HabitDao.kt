@@ -2,6 +2,7 @@ package com.example.numa.dao
 
 import androidx.room.*
 import com.example.numa.entity.Habit
+import java.time.DayOfWeek
 
 @Dao
 interface HabitDao {
@@ -11,6 +12,17 @@ interface HabitDao {
 
     @Query("SELECT * FROM habit WHERE id = :habitId")
     suspend fun getHabitById(habitId: Int): Habit?
+
+    @Query("""
+    SELECT * FROM habit 
+    WHERE userId = :userId AND (
+        (isRecurring = 1 AND dayOfWeek = :dayOfWeek)
+        OR
+        (isRecurring = 0 AND specificDate = :specificDate)
+    )
+""")
+    suspend fun getHabitsForDate(dayOfWeek: String, specificDate: Long, userId: Int): List<Habit>
+
 
     @Query("UPDATE habit SET title = :title, description = :description, startTime = :startTime, duration = :duration, experience = :experience, streak = :streak, state = :state WHERE id = :habitId")
     suspend fun updateHabit(
