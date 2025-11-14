@@ -1,5 +1,6 @@
 package com.example.numa.fragment
 
+import android.opengl.Visibility
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -44,6 +45,11 @@ class HabitFragment : Fragment() {
             bottomSheet.show(parentFragmentManager, "AddHabitBottomSheet")
         }
 
+        parentFragmentManager.setFragmentResultListener("habit_request", viewLifecycleOwner) { _, _ ->
+            loadHabitsForDate(selectedDay)
+        }
+
+
         db = Room.databaseBuilder(
             requireContext(),
             DataBase::class.java,
@@ -83,6 +89,11 @@ class HabitFragment : Fragment() {
                     userId = userId
                 )
 
+                if (habits.isEmpty()) {
+                    binding.tvInfo.visibility = View.VISIBLE
+                } else {
+                    binding.tvInfo.visibility = View.INVISIBLE
+                }
 
                 habitsAdapter = HabitAdapter(habits.toMutableList())
                 binding.rvHabits.adapter = habitsAdapter

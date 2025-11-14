@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
 import com.example.numa.DataBase
@@ -11,7 +12,9 @@ import com.example.numa.databinding.FragmentAddHabitBinding
 import com.example.numa.entity.Habit
 import com.example.numa.util.SessionManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AddHabitFragment : BottomSheetDialogFragment() {
 
@@ -32,34 +35,75 @@ class AddHabitFragment : BottomSheetDialogFragment() {
             "NumaDB"
         ).fallbackToDestructiveMigration().build()
 
+        val weekList = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+
+        val arrayAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, weekList)
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spDayWeek.adapter = arrayAdapter
+
+        binding.cbRecurring.setOnCheckedChangeListener { _, _ ->
+            isRecurring()
+        }
+
+        val durPicker = binding.numDuration
+        durPicker.minValue = 1
+        durPicker.maxValue = 300
+        durPicker.value = 10
+
+        val timePicked = binding.timeStart
+        timePicked.setIs24HourView(true)
+
         binding.btnSaveHabit.setOnClickListener {
             val sessionManager = SessionManager(requireContext())
             val userId = sessionManager.getUserId()
 
             userId?.let {
-                val newHabit = Habit(
-                    userId = userId,
-                    title = binding.edTitle.text.toString(),
-                    description = binding.edDesc.text.toString(),
-                    startTime = System.currentTimeMillis(),
-                    duration = 60 * 60 * 1000L,
-                    experience = 10,
-                    streak = 0,
-                    state = "incomplete",
-                    isRecurring = true,
-                    dayOfWeek = "FRIDAY",
-                    specificDate = null
-                )
+                val title = binding.edTitle.text.toString().trim()
+                val description = binding.edDesc.text.toString().trim()
+                val recurring = binding.cbRecurring.isChecked
+                val dayOfWeek = binding.spDayWeek.selectedItem.toString().uppercase()
+                val duration: Long = durPicker.value * 60 * 1000L
 
-                lifecycleScope.launch {
-                    db.habitDao().insertHabit(newHabit)
-                    parentFragmentManager.setFragmentResult("habit_added", Bundle())
-                    dismiss()
+                val hour = timePicked.hour
+                val min = timePicked.minute
+                val startTime: Long = (hour * 60 * 60 * 1000 + min * 60 * 1000).toLong()
+
+                if (title.isNotEmpty()) {
+                    val newHabit = Habit(
+                        userId = userId,
+                        title = title,
+                        description = description,
+                        startTime = startTime,
+                        duration = duration,
+                        experience = 10,
+                        streak = 0,
+                        state = "incomplete",
+                        isRecurring = recurring,
+                        dayOfWeek = dayOfWeek,
+                        specificDate = null,
+                    )
+
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        db.habitDao().insertHabit(newHabit)
+
+                        withContext(Dispatchers.Main) {
+                            parentFragmentManager.setFragmentResult("habit_request", Bundle())
+                            dismiss()
+                        }
+                    }
                 }
             }
         }
 
         return binding.root
+    }
+
+    private fun isRecurring() {
+        if (binding.cbRecurring.isChecked) {
+            binding.spDayWeek.visibility = View.VISIBLE
+        } else {
+            binding.spDayWeek.visibility = View.INVISIBLE
+        }
     }
 
     override fun onDestroyView() {

@@ -26,7 +26,7 @@ class HabitAdapter(val habits: MutableList<Habit>) : RecyclerView.Adapter<HabitA
     override fun onBindViewHolder(holder: HabitViewHolder, position: Int) {
         val habit = habits[position]
         holder.title.text = habit.title
-        holder.duration.text = habit.duration.toString()
+        holder.duration.text = "${(habit.duration / (60 * 1000)).toString()} min"
         holder.streak.text = "${habit.streak} dias"
         holder.xp.text = "+${habit.experience} XP"
     }
