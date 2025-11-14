@@ -6,24 +6,25 @@ import com.example.numa.entity.Achievement
 @Dao
 interface AchievementDao {
 
-    @Query("SELECT * FROM achievement WHERE userId = :userId")
-    suspend fun getAchievementsByUser(userId: Int): List<Achievement>
+    @Query("SELECT * FROM achievement")
+    suspend fun getAllAchievements(): List<Achievement>
 
-    @Query("SELECT * FROM achievement WHERE id = :achievementId")
-    suspend fun getAchievementById(achievementId: Int): Achievement?
+    @Query("SELECT * FROM achievement WHERE type = :type AND level = :level")
+    suspend fun getAchievementByTypeAndLevel(type: String, level: Int): Achievement?
 
-    @Query("UPDATE achievement SET title = :title, date = :date, points = :points, experience = :experience WHERE id = :achievementId")
-    suspend fun updateAchievement(
-        achievementId: Int,
-        title: String,
-        date: Long,
-        points: Int,
-        experience: Int
-    )
+    @Query("SELECT * FROM achievement WHERE type = :type")
+    suspend fun getAchievementsByType(type: String): List<Achievement>?
+
+    @Query("SELECT * FROM achievement WHERE id = :id")
+    suspend fun getAchievementById(id: Int): Achievement?
 
     @Insert
     suspend fun insertAchievement(achievement: Achievement): Long
 
+    @Update
+    suspend fun updateAchievement(achievement: Achievement)
+
     @Delete
     suspend fun deleteAchievement(achievement: Achievement)
 }
+
