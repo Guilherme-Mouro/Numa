@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import com.example.numa.DataBase
+import com.example.numa.R
 import com.example.numa.adapter.HabitAdapter
 import com.example.numa.adapter.WeekAdapter
 import com.example.numa.databinding.FragmentHabitBinding
@@ -47,8 +49,8 @@ class HabitFragment : Fragment() {
 
         parentFragmentManager.setFragmentResultListener("habit_request", viewLifecycleOwner) { _, _ ->
             loadHabitsForDate(selectedDay)
+            loadHabitsProgress()
         }
-
 
         db = Room.databaseBuilder(
             requireContext(),
@@ -67,10 +69,57 @@ class HabitFragment : Fragment() {
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         binding.rvWeek.adapter = weekAdapter
 
+        loadHabitsProgress()
+
         loadHabitsForDate(selectedDay)
         setupSwipeToDelete()
 
         return binding.root
+    }
+
+    private fun loadHabitsProgress() {
+        lifecycleScope.launch {
+            val sessionManager = SessionManager(requireContext())
+            val userId = sessionManager.getUserId()
+
+            val today = LocalDate.now().dayOfWeek.name
+
+            userId?.let {
+                val habits = db.habitDao().getHabitsForDate(today, 1, userId)
+
+                val totalHabits = habits.size
+                var totalCompletedHabits = 0
+
+                for(habit in habits) {
+                    if (habit.state == "completed") {
+                        totalCompletedHabits++
+                    }
+                }
+
+                val habitsProgress = totalCompletedHabits * 100 / totalHabits
+
+                val green = ContextCompat.getColor(requireContext(), R.color.green)
+                val greenBar = ContextCompat.getDrawable(requireContext(), R.drawable.bg_progress_bar_completed)
+
+                val yellow = ContextCompat.getColor(requireContext(), R.color.yellow)
+                val yellowBar = ContextCompat.getDrawable(requireContext(), R.drawable.bg_progress_bar)
+
+
+                if (habitsProgress == 100) {
+                    binding.tvPercentage.setTextColor(green)
+                    binding.cardProgress.setStrokeColor(green)
+                    binding.progressBar.setProgressDrawableTiled(greenBar)
+                } else {
+                    binding.tvPercentage.setTextColor(yellow)
+                    binding.cardProgress.setStrokeColor(yellow)
+                    binding.progressBar.setProgressDrawableTiled(yellowBar)
+                }
+
+                binding.progressBar.progress = habitsProgress
+                binding.tvPercentage.text = "$habitsProgress%"
+                binding.tvHabitsNumber.text = "$totalCompletedHabits of $totalHabits habits completed"
+            }
+        }
     }
 
     private fun loadHabitsForDate(date: LocalDate) {
@@ -78,7 +127,7 @@ class HabitFragment : Fragment() {
             val sessionManager = SessionManager(requireContext())
             val userId = sessionManager.getUserId()
 
-            if (userId != null) {
+            userId?.let {
                 val dayOfWeek = date.dayOfWeek.name
                 val specificDate =
                     date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
@@ -135,6 +184,7 @@ class HabitFragment : Fragment() {
                                 if (event != DISMISS_EVENT_ACTION) {
                                     lifecycleScope.launch(Dispatchers.IO) {
                                         db.habitDao().deleteHabit(habit)
+                                        loadHabitsProgress()
                                     }
                                 }
                             }
