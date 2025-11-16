@@ -9,34 +9,53 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
+import kotlinx.coroutines.launch
 import com.example.numa.R
 import com.example.numa.adapter.ProgressQuestAdapter
+import com.example.numa.adapter.AchievementAdapter
 import com.example.numa.adapter.Quest
+import com.example.numa.databinding.FragmentQuestBinding
+import com.example.numa.DatabaseProvider
 
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [QuestFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class QuestFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+
+    private lateinit var binding: FragmentQuestBinding
+    private lateinit var progressAdapter: ProgressQuestAdapter
+    private lateinit var achievementAdapter: AchievementAdapter
+
+    private val database by lazy { DatabaseProvider.getDatabase(requireContext()) }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = FragmentQuestBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         // Configurar o spinner
-        val spinner = view.findViewById<Spinner>(R.id.spinner)
-        val items = arrayOf("See All", "Option 1", "Option 2")
+        setupSpinner()
+
+        // RecyclerView de Quests
+        setupProgressQuestRecyclerView()
+
+        // RecyclerView de Achievements
+        setupAchievementsRecyclerView()
+
+        // Carregar achievements
+        loadAchievements()
+    }
+
+    private fun setupSpinner() {
+        val spinner = binding.root.findViewById<Spinner>(R.id.spinner)
+        val items = arrayOf("See All", "Desbloqueados", "Bloqueados")
 
         val adapterSpinner = object : ArrayAdapter<String>(
             requireContext(),
@@ -61,9 +80,21 @@ class QuestFragment : Fragment() {
         adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapterSpinner
 
-        // RecyclerView setup
-        val recyclerView = view.findViewById<RecyclerView>(R.id.rvProgressQuest)
+        // Listener para mudar achievements quando spinner muda
+        spinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                when (position) {
+                    0 -> loadAllAchievements()
+                    1 -> loadUnlockedAchievements()
+                    2 -> loadLockedAchievements()
+                }
+            }
 
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
+    }
+
+    private fun setupProgressQuestRecyclerView() {
         // Dados de exemplo
         val quests = listOf(
             Quest("Complete 3 habits", 40),
@@ -72,36 +103,59 @@ class QuestFragment : Fragment() {
             Quest("Drink 8 glasses water", 50)
         )
 
-        val adapter = ProgressQuestAdapter(quests)
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        progressAdapter = ProgressQuestAdapter(quests)
+        binding.rvProgressQuest.apply {
+            adapter = progressAdapter
+            layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+        }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_quest, container, false)
+    private fun setupAchievementsRecyclerView() {
+        achievementAdapter = AchievementAdapter()
+        binding.root.findViewById<RecyclerView>(R.id.rvAchievements).apply {
+            adapter = achievementAdapter
+            layoutManager = GridLayoutManager(requireContext(), 2)  // 2 colunas
+        }
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment QuestFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            QuestFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    private fun loadAchievements() {
+        loadAllAchievements()
+    }
+
+    private fun loadAllAchievements() {
+        lifecycleScope.launch {
+            try {
+                val achievements = database.achievementDao().getAllAchievements()
+                achievementAdapter.setAchievements(achievements)
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
+        }
+    }
+
+    private fun loadUnlockedAchievements() {
+        lifecycleScope.launch {
+            try {
+                val userId = 1  // Ou pega do teu user atual
+                val achievements = database.achievementUserDao()
+                    .getUnlockedAchievementsForUser(userId)
+                achievementAdapter.setAchievements(achievements)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun loadLockedAchievements() {
+        lifecycleScope.launch {
+            try {
+                val userId = 1  // Ou pega do teu user atual
+                val achievements = database.achievementUserDao()
+                    .getLockedAchievementsForUser(userId)
+                achievementAdapter.setAchievements(achievements)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 }
