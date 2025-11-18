@@ -14,11 +14,14 @@ import com.example.numa.fragment.HabitFragment
 import com.example.numa.fragment.HomeFragment
 import com.example.numa.fragment.QuestFragment
 import com.example.numa.fragment.SleepFragment
+import com.example.numa.util.SessionManager
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var lastSelectedView: View? = null
+    // 🛑 REMOVIDO: private lateinit var db: DataBase
 
     // Lazy initialization
     private val database by lazy { DatabaseProvider.getDatabase(this) }
@@ -42,7 +45,30 @@ class MainActivity : AppCompatActivity() {
 
         lastSelectedView = binding.bottomNav.findViewById(R.id.home)
         resizeIcon(lastSelectedView, null)
+        changePage()
 
+        val sessionManager = SessionManager(this)
+        val userId = sessionManager.getUserId()
+
+
+        lifecycleScope.launch {
+            userId?.let {
+                val user = database.userDao().getUserById(userId) 
+
+                user?.let {
+                    binding.tvUserName.text = it.name
+                }
+            }
+        }
+    }
+
+    private fun changeMenuItem(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.frameLayout, fragment)
+            .commit()
+    }
+
+    private fun changePage() {
         binding.bottomNav.setOnItemSelectedListener { item ->
             val selectedView = binding.bottomNav.findViewById<View>(item.itemId)
 
@@ -60,7 +86,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ✅ FUNÇÃO PARA INICIALIZAR ACHIEVEMENTS
     private fun initializeAchievements() {
         lifecycleScope.launch {
             try {
@@ -80,12 +105,6 @@ class MainActivity : AppCompatActivity() {
                 Log.e("MainActivity", "❌ Erro ao inicializar achievements: ${e.message}")
             }
         }
-    }
-
-    private fun changeMenuItem(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.frameLayout, fragment)
-            .commit()
     }
 
     private fun resizeIcon(selectedView: View?, previousView: View?) {
