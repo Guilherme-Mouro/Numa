@@ -1,11 +1,14 @@
 package com.example.numa
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
+import androidx.core.content.edit
+import kotlinx.coroutines.launch
 import com.example.numa.databinding.ActivityMainBinding
 import com.example.numa.fragment.HabitFragment
 import com.example.numa.fragment.HomeFragment
@@ -18,10 +21,23 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var lastSelectedView: View? = null
-    private lateinit var db: DataBase
+    // 🛑 REMOVIDO: private lateinit var db: DataBase
+
+    // Lazy initialization
+    private val database by lazy { DatabaseProvider.getDatabase(this) }
+    private val achievementRepository by lazy {
+        AchievementRepository(database.achievementDao())
+    }
+    private val sharedPref by lazy {
+        getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ✅ INICIALIZAR ACHIEVEMENTS
+        initializeAchievements()
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -34,15 +50,10 @@ class MainActivity : AppCompatActivity() {
         val sessionManager = SessionManager(this)
         val userId = sessionManager.getUserId()
 
-        db = Room.databaseBuilder(
-            this,
-            DataBase::class.java,
-            "NumaDB"
-        ).fallbackToDestructiveMigration().build()
 
         lifecycleScope.launch {
             userId?.let {
-                val user = db.userDao().getUserById(userId)
+                val user = database.userDao().getUserById(userId) 
 
                 user?.let {
                     binding.tvUserName.text = it.name
@@ -75,9 +86,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun initializeAchievements() {
+        lifecycleScope.launch {
+            try {
+                val isInitialized = sharedPref.getBoolean("achievements_initialized", false)
+
+                if (!isInitialized) {
+                    Log.d("MainActivity", "Inicializando achievements...")
+                    achievementRepository.initializeAchievements()
+                    sharedPref.edit {
+                        putBoolean("achievements_initialized", true)
+                    }
+                    Log.d("MainActivity", "✅ Achievements inicializados com sucesso!")
+                } else {
+                    Log.d("MainActivity", "Achievements já inicializados")
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "❌ Erro ao inicializar achievements: ${e.message}")
+            }
+        }
+    }
+
     private fun resizeIcon(selectedView: View?, previousView: View?) {
         previousView?.animate()?.scaleX(1f)?.scaleY(1f)?.setDuration(150)?.start()
-
         selectedView?.animate()?.scaleX(1.3f)?.scaleY(1.3f)?.setDuration(200)?.start()
     }
 }
