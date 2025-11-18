@@ -1,5 +1,6 @@
 package com.example.numa.fragment
 
+import android.app.AlertDialog
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -19,6 +20,7 @@ import com.example.numa.adapter.AchievementAdapter
 import com.example.numa.adapter.Quest
 import com.example.numa.databinding.FragmentQuestBinding
 import com.example.numa.DatabaseProvider
+import com.example.numa.entity.Achievement
 
 class QuestFragment : Fragment() {
 
@@ -111,10 +113,14 @@ class QuestFragment : Fragment() {
     }
 
     private fun setupAchievementsRecyclerView() {
-        achievementAdapter = AchievementAdapter()
-        binding.root.findViewById<RecyclerView>(R.id.rvAchievements).apply {
+        achievementAdapter = AchievementAdapter { achievement ->
+            showSimpleDetailsDialog(achievement)
+        }
+
+        binding.rvAchievements.apply {
             adapter = achievementAdapter
-            layoutManager = GridLayoutManager(requireContext(), 2)  // 2 colunas
+            layoutManager = GridLayoutManager(requireContext(), 2)
+            isNestedScrollingEnabled = false
         }
     }
 
@@ -157,5 +163,20 @@ class QuestFragment : Fragment() {
                 e.printStackTrace()
             }
         }
+    }
+    // Criar a função simples para mostrar os detalhes
+    private fun showSimpleDetailsDialog(achievement: Achievement) {
+        val context = requireContext()
+
+        // Conteúdo da mensagem
+        val message = "Level: ${achievement.level}\n\n${achievement.description}"
+
+        AlertDialog.Builder(context)
+            .setTitle(achievement.title)
+            .setMessage(message)
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 }
