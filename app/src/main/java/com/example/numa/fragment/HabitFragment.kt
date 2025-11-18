@@ -46,6 +46,12 @@ class HabitFragment : Fragment() {
         val sessionManager = SessionManager(requireContext())
         val userId = sessionManager.getUserId()
 
+        db = Room.databaseBuilder(
+            requireContext(),
+            DataBase::class.java,
+            "NumaDB"
+        ).fallbackToDestructiveMigration().build()
+
         //Handling the add Habit button
         binding.btnAddHabit.setOnClickListener {
             val bottomSheet = AddHabitFragment()
@@ -56,12 +62,6 @@ class HabitFragment : Fragment() {
             loadHabitsForDate(selectedDay, userId)
             loadHabitsProgress(userId)
         }
-
-        db = Room.databaseBuilder(
-            requireContext(),
-            DataBase::class.java,
-            "NumaDB"
-        ).fallbackToDestructiveMigration().build()
 
         binding.rvHabits.layoutManager = LinearLayoutManager(requireContext())
 
@@ -95,7 +95,7 @@ class HabitFragment : Fragment() {
                     var totalCompletedHabits = 0
 
                     for (habit in habits) {
-                        if (habit.state == "completed") {
+                        if (habit.state == "complete") {
                             totalCompletedHabits++
                         }
                     }
@@ -206,7 +206,6 @@ class HabitFragment : Fragment() {
         val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
         itemTouchHelper.attachToRecyclerView(binding.rvHabits)
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()
