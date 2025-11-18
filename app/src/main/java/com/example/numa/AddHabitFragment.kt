@@ -1,5 +1,6 @@
 package com.example.numa.fragment
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +16,9 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class AddHabitFragment : BottomSheetDialogFragment() {
 
@@ -45,6 +49,22 @@ class AddHabitFragment : BottomSheetDialogFragment() {
             isRecurring()
         }
 
+        binding.btnSelectDate.setOnClickListener {
+            val calendar = Calendar.getInstance()
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+            val datePicker = DatePickerDialog(
+                requireContext(),
+                { _, y, m, d ->
+                    binding.btnSelectDate.text = "$d/${m + 1}/$y"
+                }, year, month, day
+            )
+
+            datePicker.show()
+        }
+
         val durPicker = binding.numDuration
         durPicker.minValue = 1
         durPicker.maxValue = 300
@@ -61,8 +81,17 @@ class AddHabitFragment : BottomSheetDialogFragment() {
                 val title = binding.edTitle.text.toString().trim()
                 val description = binding.edDesc.text.toString().trim()
                 val recurring = binding.cbRecurring.isChecked
-                val dayOfWeek = binding.spDayWeek.selectedItem.toString().uppercase()
                 val duration: Long = durPicker.value * 60 * 1000L
+                var dayOfWeek: String? = null
+                var specificDate: Long? = null
+
+                if (recurring) {
+                    dayOfWeek = binding.spDayWeek.selectedItem.toString().uppercase()
+                } else {
+                    val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+
+                    specificDate = format.parse(binding.btnSelectDate.text.toString())?.time ?: 0L
+                }
 
                 val hour = timePicked.hour
                 val min = timePicked.minute
@@ -80,7 +109,7 @@ class AddHabitFragment : BottomSheetDialogFragment() {
                         state = "incomplete",
                         isRecurring = recurring,
                         dayOfWeek = dayOfWeek,
-                        specificDate = null,
+                        specificDate = specificDate,
                     )
 
                     lifecycleScope.launch(Dispatchers.IO) {
@@ -101,8 +130,10 @@ class AddHabitFragment : BottomSheetDialogFragment() {
     private fun isRecurring() {
         if (binding.cbRecurring.isChecked) {
             binding.spDayWeek.visibility = View.VISIBLE
+            binding.btnSelectDate.visibility = View.INVISIBLE
         } else {
             binding.spDayWeek.visibility = View.INVISIBLE
+            binding.btnSelectDate.visibility = View.VISIBLE
         }
     }
 

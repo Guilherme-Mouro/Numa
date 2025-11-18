@@ -42,14 +42,19 @@ class HabitFragment : Fragment() {
     ): View {
         _binding = FragmentHabitBinding.inflate(inflater, container, false)
 
+        // Creating the sessionManager variable to be able to check the user Id later
+        val sessionManager = SessionManager(requireContext())
+        val userId = sessionManager.getUserId()
+
+        //Handling the add Habit button
         binding.btnAddHabit.setOnClickListener {
             val bottomSheet = AddHabitFragment()
             bottomSheet.show(parentFragmentManager, "AddHabitBottomSheet")
         }
 
         parentFragmentManager.setFragmentResultListener("habit_request", viewLifecycleOwner) { _, _ ->
-            loadHabitsForDate(selectedDay)
-            loadHabitsProgress()
+            loadHabitsForDate(selectedDay, userId)
+            loadHabitsProgress(userId)
         }
 
         db = Room.databaseBuilder(
@@ -63,69 +68,74 @@ class HabitFragment : Fragment() {
         val weekDays = getCurrentWeek()
         val weekAdapter = WeekAdapter(weekDays) { selectedDate ->
             selectedDay = selectedDate
-            loadHabitsForDate(selectedDate)
+            loadHabitsForDate(selectedDate, userId)
         }
         binding.rvWeek.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         binding.rvWeek.adapter = weekAdapter
 
-        loadHabitsProgress()
+        loadHabitsProgress(userId)
 
-        loadHabitsForDate(selectedDay)
-        setupSwipeToDelete()
+        loadHabitsForDate(selectedDay, userId)
+        setupSwipeToDelete(userId)
 
         return binding.root
     }
 
-    private fun loadHabitsProgress() {
+    private fun loadHabitsProgress(userId: Int?) {
         lifecycleScope.launch {
-            val sessionManager = SessionManager(requireContext())
-            val userId = sessionManager.getUserId()
 
             val today = LocalDate.now().dayOfWeek.name
 
             userId?.let {
                 val habits = db.habitDao().getHabitsForDate(today, 1, userId)
 
-                val totalHabits = habits.size
-                var totalCompletedHabits = 0
+                if (habits.isNotEmpty()) {
+                    val totalHabits = habits.size
+                    var totalCompletedHabits = 0
 
-                for(habit in habits) {
-                    if (habit.state == "completed") {
-                        totalCompletedHabits++
+                    for (habit in habits) {
+                        if (habit.state == "completed") {
+                            totalCompletedHabits++
+                        }
                     }
-                }
 
-                val habitsProgress = totalCompletedHabits * 100 / totalHabits
+                    val habitsProgress = totalCompletedHabits * 100 / totalHabits
 
-                val green = ContextCompat.getColor(requireContext(), R.color.green)
-                val greenBar = ContextCompat.getDrawable(requireContext(), R.drawable.bg_progress_bar_completed)
+                    val green = ContextCompat.getColor(requireContext(), R.color.green)
+                    val greenBar = ContextCompat.getDrawable(
+                        requireContext(),
+                        R.drawable.bg_progress_bar_completed
+                    )
 
-                val yellow = ContextCompat.getColor(requireContext(), R.color.yellow)
-                val yellowBar = ContextCompat.getDrawable(requireContext(), R.drawable.bg_progress_bar)
+                    val yellow = ContextCompat.getColor(requireContext(), R.color.yellow)
+                    val yellowBar =
+                        ContextCompat.getDrawable(requireContext(), R.drawable.bg_progress_bar)
 
 
-                if (habitsProgress == 100) {
-                    binding.tvPercentage.setTextColor(green)
-                    binding.cardProgress.setStrokeColor(green)
-                    binding.progressBar.setProgressDrawableTiled(greenBar)
+                    if (habitsProgress == 100) {
+                        binding.tvPercentage.setTextColor(green)
+                        binding.cardProgress.setStrokeColor(green)
+                        binding.progressBar.setProgressDrawableTiled(greenBar)
+                    } else {
+                        binding.tvPercentage.setTextColor(yellow)
+                        binding.cardProgress.setStrokeColor(yellow)
+                        binding.progressBar.setProgressDrawableTiled(yellowBar)
+                    }
+
+                    binding.progressBar.progress = habitsProgress
+                    binding.tvPercentage.text = "$habitsProgress%"
+                    binding.tvHabitsNumber.text =
+                        "$totalCompletedHabits of $totalHabits habits completed"
                 } else {
-                    binding.tvPercentage.setTextColor(yellow)
-                    binding.cardProgress.setStrokeColor(yellow)
-                    binding.progressBar.setProgressDrawableTiled(yellowBar)
+                    binding.layoutProgress.visibility = View.INVISIBLE
                 }
-
-                binding.progressBar.progress = habitsProgress
-                binding.tvPercentage.text = "$habitsProgress%"
-                binding.tvHabitsNumber.text = "$totalCompletedHabits of $totalHabits habits completed"
             }
         }
     }
 
-    private fun loadHabitsForDate(date: LocalDate) {
+    private fun loadHabitsForDate(date: LocalDate, userId: Int?) {
         lifecycleScope.launch {
-            val sessionManager = SessionManager(requireContext())
-            val userId = sessionManager.getUserId()
 
             userId?.let {
                 val dayOfWeek = date.dayOfWeek.name
@@ -139,9 +149,9 @@ class HabitFragment : Fragment() {
                 )
 
                 if (habits.isEmpty()) {
-                    binding.tvInfo.visibility = View.VISIBLE
+                    binding.tvInfoHabits.visibility = View.VISIBLE
                 } else {
-                    binding.tvInfo.visibility = View.INVISIBLE
+                    binding.tvInfoHabits.visibility = View.INVISIBLE
                 }
 
                 habitsAdapter = HabitAdapter(habits.toMutableList())
@@ -156,7 +166,7 @@ class HabitFragment : Fragment() {
         return (0..6).map { startOfWeek.plusDays(it.toLong()) }
     }
 
-    private fun setupSwipeToDelete() {
+    private fun setupSwipeToDelete(userId: Int?) {
         val itemTouchHelperCallback =
             object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
                 override fun onMove(
@@ -184,7 +194,7 @@ class HabitFragment : Fragment() {
                                 if (event != DISMISS_EVENT_ACTION) {
                                     lifecycleScope.launch(Dispatchers.IO) {
                                         db.habitDao().deleteHabit(habit)
-                                        loadHabitsProgress()
+                                        loadHabitsProgress(userId)
                                     }
                                 }
                             }
