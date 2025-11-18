@@ -25,4 +25,8 @@ data class Habit (
     val streak: Int,
     val state: String,
 
-    )
+    val isRecurring: Boolean,
+    val dayOfWeek: String? = null,
+    val specificDate: Long? = null
+
+)
