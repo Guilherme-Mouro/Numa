@@ -54,6 +54,7 @@ class HomeFragment : Fragment() {
         characterAnimation.start()
 
         loadIncompletedHabits(userId)
+        loadCompletedHabits(userId)
 
         return binding.root
     }
@@ -70,6 +71,23 @@ class HomeFragment : Fragment() {
                 habitsAdapter = HabitAdapter(habits.toMutableList())
                 binding.rvHabits.layoutManager = LinearLayoutManager(requireContext())
                 binding.rvHabits.adapter = habitsAdapter
+
+            }
+        }
+    }
+
+    private fun loadCompletedHabits(userId: Int?) {
+        lifecycleScope.launch {
+            val today = LocalDate.now().dayOfWeek.name
+            val specificDate =
+                LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+
+            userId?.let {
+                val habits = db.habitDao().getCompletedHabitsForDate(today, specificDate, userId)
+
+                habitsAdapter = HabitAdapter(habits.toMutableList())
+                binding.rvCompletedHabits.layoutManager = LinearLayoutManager(requireContext())
+                binding.rvCompletedHabits.adapter = habitsAdapter
 
             }
         }

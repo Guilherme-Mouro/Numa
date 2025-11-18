@@ -128,7 +128,7 @@ class HabitFragment : Fragment() {
                     binding.tvHabitsNumber.text =
                         "$totalCompletedHabits of $totalHabits habits completed"
                 } else {
-                    binding.layoutProgress.visibility = View.INVISIBLE
+                    binding.layoutProgress.visibility = View.GONE
                 }
             }
         }
