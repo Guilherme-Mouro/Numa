@@ -14,6 +14,7 @@ import com.example.numa.fragment.HabitFragment
 import com.example.numa.fragment.HomeFragment
 import com.example.numa.fragment.QuestFragment
 import com.example.numa.fragment.SleepFragment
+import com.example.numa.util.DatabaseProvider
 import com.example.numa.util.SessionManager
 import kotlinx.coroutines.launch
 
@@ -34,6 +35,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
 
         // ✅ INICIALIZAR ACHIEVEMENTS
         initializeAchievements()
@@ -104,6 +107,16 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Log.e("MainActivity", "❌ Erro ao inicializar achievements: ${e.message}")
             }
+        }
+
+
+    }
+    private fun clearSharedPreferencesForTesting() {
+        Log.w("MainActivity", "🚨 LIMPEZA DE DADOS: Apagando 'app_prefs' para teste.")
+
+        // Limpa todas as chaves no arquivo "app_prefs"
+        sharedPref.edit {
+            clear()
         }
     }
 

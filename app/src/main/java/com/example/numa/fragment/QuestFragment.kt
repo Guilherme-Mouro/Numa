@@ -19,14 +19,18 @@ import com.example.numa.adapter.ProgressQuestAdapter
 import com.example.numa.adapter.AchievementAdapter
 import com.example.numa.adapter.Quest
 import com.example.numa.databinding.FragmentQuestBinding
-import com.example.numa.DatabaseProvider
+import com.example.numa.util.DatabaseProvider
 import com.example.numa.entity.Achievement
+import com.example.numa.util.SessionManager
 
 class QuestFragment : Fragment() {
 
     private lateinit var binding: FragmentQuestBinding
     private lateinit var progressAdapter: ProgressQuestAdapter
     private lateinit var achievementAdapter: AchievementAdapter
+
+    // ✅ CORREÇÃO: Inicializa o SessionManager para ser usado nos métodos load
+    private val sessionManager by lazy { SessionManager(requireContext()) }
 
     private val database by lazy { DatabaseProvider.getDatabase(requireContext()) }
 
@@ -113,6 +117,7 @@ class QuestFragment : Fragment() {
     }
 
     private fun setupAchievementsRecyclerView() {
+        // Inicializa o Adapter e define a ação de clique para mostrar o AlertDialog
         achievementAdapter = AchievementAdapter { achievement ->
             showSimpleDetailsDialog(achievement)
         }
@@ -125,12 +130,14 @@ class QuestFragment : Fragment() {
     }
 
     private fun loadAchievements() {
+        // Por padrão, carrega todos os achievements na inicialização
         loadAllAchievements()
     }
 
     private fun loadAllAchievements() {
         lifecycleScope.launch {
             try {
+                // Carrega todos, independentemente do usuário
                 val achievements = database.achievementDao().getAllAchievements()
                 achievementAdapter.setAchievements(achievements)
             } catch (e: Exception) {
@@ -142,10 +149,17 @@ class QuestFragment : Fragment() {
     private fun loadUnlockedAchievements() {
         lifecycleScope.launch {
             try {
-                val userId = 1  // Ou pega do teu user atual
-                val achievements = database.achievementUserDao()
-                    .getUnlockedAchievementsForUser(userId)
-                achievementAdapter.setAchievements(achievements)
+                // Obtém o ID do usuário da sessão
+                val userId = sessionManager.getUserId()
+
+                if (userId != null) {
+                    val achievements = database.achievementUserDao()
+                        .getUnlockedAchievementsForUser(userId)
+                    achievementAdapter.setAchievements(achievements)
+                } else {
+                    // Limpar ou mostrar uma mensagem de erro se o ID não for encontrado
+                    achievementAdapter.setAchievements(emptyList())
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -155,16 +169,24 @@ class QuestFragment : Fragment() {
     private fun loadLockedAchievements() {
         lifecycleScope.launch {
             try {
-                val userId = 1  // Ou pega do teu user atual
-                val achievements = database.achievementUserDao()
-                    .getLockedAchievementsForUser(userId)
-                achievementAdapter.setAchievements(achievements)
+                // Obtém o ID do usuário da sessão
+                val userId = sessionManager.getUserId()
+
+                if (userId != null) {
+                    val achievements = database.achievementUserDao()
+                        .getLockedAchievementsForUser(userId)
+                    achievementAdapter.setAchievements(achievements)
+                } else {
+                    // Limpar ou mostrar uma mensagem de erro se o ID não for encontrado
+                    achievementAdapter.setAchievements(emptyList())
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
-    // Criar a função simples para mostrar os detalhes
+
+    // Criar a função simples para mostrar os detalhes (AlertDialog)
     private fun showSimpleDetailsDialog(achievement: Achievement) {
         val context = requireContext()
 
