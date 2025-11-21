@@ -15,6 +15,7 @@ import com.example.numa.DataBase
 import com.example.numa.R
 import com.example.numa.adapter.HabitAdapter
 import com.example.numa.databinding.FragmentHomeBinding
+import com.example.numa.util.FixPixelArt
 import com.example.numa.util.SessionManager
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDate
@@ -27,8 +28,6 @@ class HomeFragment : Fragment() {
     private lateinit var db: DataBase
     private lateinit var habitsAdapter: HabitAdapter
 
-
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -39,6 +38,8 @@ class HomeFragment : Fragment() {
         // Creating the sessionManager variable to be able to check the user Id later
         val sessionManager = SessionManager(requireContext())
         val userId = sessionManager.getUserId()
+
+        FixPixelArt(requireContext()).removeFilter(binding.imgBackground)
 
         db = Room.databaseBuilder(
             requireContext(),
@@ -53,42 +54,51 @@ class HomeFragment : Fragment() {
         val characterAnimation = characterImageView.background as AnimationDrawable
         characterAnimation.start()
 
-        loadIncompletedHabits(userId)
-        loadCompletedHabits(userId)
+        loadHabits(userId)
 
         return binding.root
     }
 
-    private fun loadIncompletedHabits(userId: Int?) {
+    private fun loadHabits(userId: Int?) {
         lifecycleScope.launch {
+
+            val uid = userId ?: return@launch
+
             val today = LocalDate.now().dayOfWeek.name
             val specificDate =
                 LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
 
-            userId?.let {
-                val habits = db.habitDao().getHabitsForDate(today, specificDate, userId)
+            val habitsForDate = db.habitDao().getHabitsForDate(today, specificDate, uid)
+            val habitsCompleted = db.habitDao().getCompletedHabitsForDate(today, specificDate, uid)
 
-                habitsAdapter = HabitAdapter(habits.toMutableList())
-                binding.rvHabits.layoutManager = LinearLayoutManager(requireContext())
-                binding.rvHabits.adapter = habitsAdapter
+            val titleHabits = binding.tvHabitsTitle
+            val titleCompleted = binding.tvCompletedHabitsTitle
 
+            if (habitsForDate.isEmpty() && habitsCompleted.isEmpty()) {
+                titleHabits.visibility = View.GONE
+                titleCompleted.visibility = View.GONE
+                binding.tvInfo.visibility = View.VISIBLE
+                return@launch
             }
-        }
-    }
 
-    private fun loadCompletedHabits(userId: Int?) {
-        lifecycleScope.launch {
-            val today = LocalDate.now().dayOfWeek.name
-            val specificDate =
-                LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+            if (habitsForDate.isEmpty()) {
+                titleHabits.visibility = View.GONE
+            } else {
+                titleHabits.visibility = View.VISIBLE
+                binding.rvHabits.apply {
+                    layoutManager = LinearLayoutManager(requireContext())
+                    adapter = HabitAdapter(habitsForDate.toMutableList())
+                }
+            }
 
-            userId?.let {
-                val habits = db.habitDao().getCompletedHabitsForDate(today, specificDate, userId)
-
-                habitsAdapter = HabitAdapter(habits.toMutableList())
-                binding.rvCompletedHabits.layoutManager = LinearLayoutManager(requireContext())
-                binding.rvCompletedHabits.adapter = habitsAdapter
-
+            if (habitsCompleted.isEmpty()) {
+                titleCompleted.visibility = View.GONE
+            } else {
+                titleCompleted.visibility = View.VISIBLE
+                binding.rvCompletedHabits.apply {
+                    layoutManager = LinearLayoutManager(requireContext())
+                    adapter = HabitAdapter(habitsCompleted.toMutableList())
+                }
             }
         }
     }

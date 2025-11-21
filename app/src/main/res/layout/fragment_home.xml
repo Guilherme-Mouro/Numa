@@ -37,6 +37,16 @@
         android:padding="16dp">
 
         <TextView
+            android:id="@+id/tvInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="No habits for today!"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:visibility="gone"/>
+
+        <TextView
             android:id="@+id/tvHabitsTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
