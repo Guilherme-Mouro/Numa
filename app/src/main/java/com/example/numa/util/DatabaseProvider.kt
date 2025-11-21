@@ -1,7 +1,8 @@
-package com.example.numa
+package com.example.numa.util
 
 import android.content.Context
 import androidx.room.Room
+import com.example.numa.DataBase
 
 object DatabaseProvider {
 
@@ -13,7 +14,7 @@ object DatabaseProvider {
             val instance = Room.databaseBuilder(
                 context.applicationContext,
                 DataBase::class.java,
-                "numa_database"
+                "NumaDB"
             ).build()
 
             INSTANCE = instance

@@ -19,11 +19,14 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import com.example.numa.CheckAchievementRepository
 
 class AddHabitFragment : BottomSheetDialogFragment() {
 
     private var _binding: FragmentAddHabitBinding? = null
     private val binding get() = _binding!!
+
+    private lateinit var checkAchievementRepository: CheckAchievementRepository // Novo Repositório
     private lateinit var db: DataBase
 
     override fun onCreateView(
@@ -38,6 +41,12 @@ class AddHabitFragment : BottomSheetDialogFragment() {
             DataBase::class.java,
             "NumaDB"
         ).fallbackToDestructiveMigration().build()
+        checkAchievementRepository = CheckAchievementRepository(
+            db.achievementDao(),
+            db.achievementUserDao(),
+            db.userDao(),
+            db.habitDao()
+        )
 
         val weekList = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
@@ -75,9 +84,9 @@ class AddHabitFragment : BottomSheetDialogFragment() {
 
         binding.btnSaveHabit.setOnClickListener {
             val sessionManager = SessionManager(requireContext())
-            val userId = sessionManager.getUserId()
+            val userId = sessionManager.getUserId() // userId é Int?
 
-            userId?.let {
+            userId?.let { nonNullUserId -> // Renomeamos para 'nonNullUserId' para clareza
                 val title = binding.edTitle.text.toString().trim()
                 val description = binding.edDesc.text.toString().trim()
                 val recurring = binding.cbRecurring.isChecked
@@ -89,7 +98,6 @@ class AddHabitFragment : BottomSheetDialogFragment() {
                     dayOfWeek = binding.spDayWeek.selectedItem.toString().uppercase()
                 } else {
                     val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-
                     specificDate = format.parse(binding.btnSelectDate.text.toString())?.time ?: 0L
                 }
 
@@ -98,8 +106,9 @@ class AddHabitFragment : BottomSheetDialogFragment() {
                 val startTime: Long = (hour * 60 * 60 * 1000 + min * 60 * 1000).toLong()
 
                 if (title.isNotEmpty()) {
+                    // Variável newHabit está DENTRO deste escopo
                     val newHabit = Habit(
-                        userId = userId,
+                        userId = nonNullUserId, // Usamos o ID não nulo
                         title = title,
                         description = description,
                         startTime = startTime,
@@ -115,14 +124,16 @@ class AddHabitFragment : BottomSheetDialogFragment() {
                     lifecycleScope.launch(Dispatchers.IO) {
                         db.habitDao().insertHabit(newHabit)
 
+                        checkAchievementRepository.checkAllAchievements(nonNullUserId)
+
                         withContext(Dispatchers.Main) {
                             parentFragmentManager.setFragmentResult("habit_request", Bundle())
                             dismiss()
                         }
                     }
                 }
-            }
-        }
+            } // Fim do userId?.let
+        } // Fim do setOnClickListener
 
         return binding.root
     }

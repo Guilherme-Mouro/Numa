@@ -42,7 +42,7 @@ class CheckAchievementRepository(
         val habits = habitDao.getHabitsByUser(userId)
 
         // DAILY STREAK
-        when (user.sequence) {
+        when (user.streak) {
             1 -> checkAndUnlockAchievement(userId, "DAILY_STREAK", 1)
             7 -> checkAndUnlockAchievement(userId, "DAILY_STREAK", 7)
             30 -> checkAndUnlockAchievement(userId, "DAILY_STREAK", 30)
@@ -53,7 +53,7 @@ class CheckAchievementRepository(
         // HABIT STREAK
         if (habitId != null) {
             val habit = habitDao.getHabitById(habitId)
-            when (habit?.sequence) {
+            when (habit?.streak) {
                 7 -> checkAndUnlockAchievement(userId, "HABIT_STREAK", 7)
                 30 -> checkAndUnlockAchievement(userId, "HABIT_STREAK", 30)
                 60 -> checkAndUnlockAchievement(userId, "HABIT_STREAK", 60)
