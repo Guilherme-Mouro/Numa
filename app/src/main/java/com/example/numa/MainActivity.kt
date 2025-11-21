@@ -52,6 +52,8 @@ class MainActivity : AppCompatActivity() {
 
         val sessionManager = SessionManager(this)
         val userId = sessionManager.getUserId()
+        //sessionManager.deleteUserId()
+
 
 
         lifecycleScope.launch {
