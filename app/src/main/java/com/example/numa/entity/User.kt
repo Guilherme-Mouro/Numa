@@ -8,6 +8,7 @@ data class User(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
 
     val name: String,
+    val level: Int,
     val streak: Int,
     val points: Int,
 

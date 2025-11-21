@@ -27,6 +27,8 @@ data class Habit (
 
     val isRecurring: Boolean,
     val dayOfWeek: String? = null,
-    val specificDate: Long? = null
+    val specificDate: Long? = null,
+
+    val type: String,
 
 )

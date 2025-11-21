@@ -9,10 +9,20 @@ data class Sleep (
 
     val userId: Int,
     val date: Long,
-    val duration: Long,
+
+    //val duration: Long,
+    val startTime: Long,
+    val endTime: Long,
+
     val timesAwake: Int,
+
+    val snoring: Boolean,
+    val snoringAudioPath: String?,
+
+    val noiseLevel: Double,
+
     val score: Double,
+    val quality: String,
     val points: Int,
     val experience: Int,
-
 )

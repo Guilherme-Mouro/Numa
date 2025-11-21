@@ -4,10 +4,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.example.numa.R // Importar R para acessar recursos
+import com.example.numa.R
 import com.example.numa.databinding.ItemAchievementBinding
 import com.example.numa.entity.Achievement
-
 
 class AchievementAdapter(
 
@@ -56,7 +55,7 @@ class AchievementAdapter(
                 }
 
                 // Aplicar background ao LinearLayout
-                root.findViewById<android.view.ViewGroup>(R.id.linearLayoutAchievement)
+                root.findViewById<ViewGroup>(R.id.linearLayoutAchievement)
                     ?.setBackgroundResource(backgroundResId)
             }
             binding.root.setOnClickListener {

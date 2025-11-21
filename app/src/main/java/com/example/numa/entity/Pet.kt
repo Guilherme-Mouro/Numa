@@ -18,9 +18,12 @@ data class Pet(
 
     val userId: Int,
     val name: String,
-    val level: Int,
-    val experience: Int,
+
     val humor: String,
-    val sprite: String,
+
+    val head: String?,
+    val torso: String?,
+    val legs: String?,
+    val feet: String?,
 
     )

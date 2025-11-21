@@ -1,5 +1,6 @@
 package com.example.numa.fragment
 
+import android.R
 import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
+import com.example.numa.CheckAchievementRepository
 import com.example.numa.DataBase
 import com.example.numa.databinding.FragmentAddHabitBinding
 import com.example.numa.entity.Habit
@@ -19,7 +21,6 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import com.example.numa.CheckAchievementRepository
 
 class AddHabitFragment : BottomSheetDialogFragment() {
 
@@ -50,8 +51,8 @@ class AddHabitFragment : BottomSheetDialogFragment() {
 
         val weekList = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
-        val arrayAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, weekList)
-        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val arrayAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, weekList)
+        arrayAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
         binding.spDayWeek.adapter = arrayAdapter
 
         binding.cbRecurring.setOnCheckedChangeListener { _, _ ->
@@ -86,7 +87,7 @@ class AddHabitFragment : BottomSheetDialogFragment() {
             val sessionManager = SessionManager(requireContext())
             val userId = sessionManager.getUserId() // userId é Int?
 
-            userId?.let { nonNullUserId -> // Renomeamos para 'nonNullUserId' para clareza
+            userId?.let { nonNullUserId ->
                 val title = binding.edTitle.text.toString().trim()
                 val description = binding.edDesc.text.toString().trim()
                 val recurring = binding.cbRecurring.isChecked
@@ -106,9 +107,8 @@ class AddHabitFragment : BottomSheetDialogFragment() {
                 val startTime: Long = (hour * 60 * 60 * 1000 + min * 60 * 1000).toLong()
 
                 if (title.isNotEmpty()) {
-                    // Variável newHabit está DENTRO deste escopo
                     val newHabit = Habit(
-                        userId = nonNullUserId, // Usamos o ID não nulo
+                        userId = nonNullUserId,
                         title = title,
                         description = description,
                         startTime = startTime,
@@ -119,6 +119,7 @@ class AddHabitFragment : BottomSheetDialogFragment() {
                         isRecurring = recurring,
                         dayOfWeek = dayOfWeek,
                         specificDate = specificDate,
+                        type = "leisure",
                     )
 
                     lifecycleScope.launch(Dispatchers.IO) {

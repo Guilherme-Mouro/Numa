@@ -17,7 +17,7 @@ import com.example.numa.entity.AchievementUser
 
 @Database(
     entities = [User::class, Pet::class, Habit::class, Sleep::class, Achievement::class, AchievementUser::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 
