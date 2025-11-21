@@ -3,10 +3,14 @@ package com.example.numa.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.numa.R
 import com.example.numa.entity.Habit
+import com.google.android.material.card.MaterialCardView
 
 class HabitAdapter(val habits: MutableList<Habit>) : RecyclerView.Adapter<HabitAdapter.HabitViewHolder>() {
 
@@ -15,6 +19,10 @@ class HabitAdapter(val habits: MutableList<Habit>) : RecyclerView.Adapter<HabitA
         val duration = itemView.findViewById<TextView>(R.id.tvDuration)
         val streak = itemView.findViewById<TextView>(R.id.tvStreak)
         val xp = itemView.findViewById<TextView>(R.id.tvXp)
+        val iconBg = itemView.findViewById<ImageView>(R.id.vIconPlaceholder)
+        val layoutXp = itemView.findViewById<LinearLayout>(R.id.layoutXp)
+        val layoutDuration = itemView.findViewById<LinearLayout>(R.id.layoutDuration)
+        val card = itemView as MaterialCardView
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HabitViewHolder {
@@ -29,6 +37,23 @@ class HabitAdapter(val habits: MutableList<Habit>) : RecyclerView.Adapter<HabitA
         holder.duration.text = "${(habit.duration / (60 * 1000)).toString()} min"
         holder.streak.text = "${habit.streak} dias"
         holder.xp.text = "+${habit.experience} XP"
+
+        if (habit.state == "complete") {
+            holder.card.strokeColor = ContextCompat.getColor(holder.itemView.context, R.color.green)
+            holder.card.strokeWidth = 15
+
+            holder.title.paintFlags = android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+
+            holder.iconBg.setBackgroundResource(R.drawable.ic_completed_background)
+            holder.iconBg.setImageResource(R.drawable.ic_check)
+            holder.iconBg.setColorFilter(ContextCompat.getColor(holder.itemView.context ,R.color.white))
+
+            holder.layoutXp.visibility = View.GONE
+            holder.layoutDuration.visibility = View.GONE
+        } else {
+            holder.card.strokeWidth = 0
+        }
+
     }
 
     override fun getItemCount() = habits.size

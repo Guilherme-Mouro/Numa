@@ -1,60 +1,106 @@
 package com.example.numa.fragment
 
+import android.graphics.BitmapFactory
+import android.graphics.drawable.AnimationDrawable
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.room.Room
+import com.example.numa.DataBase
 import com.example.numa.R
+import com.example.numa.adapter.HabitAdapter
+import com.example.numa.databinding.FragmentHomeBinding
+import com.example.numa.util.FixPixelArt
+import com.example.numa.util.SessionManager
+import kotlinx.coroutines.launch
+import org.threeten.bp.LocalDate
+import org.threeten.bp.ZoneId
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [HomeFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class HomeFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
+    private lateinit var db: DataBase
+    private lateinit var habitsAdapter: HabitAdapter
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+
+        // Creating the sessionManager variable to be able to check the user Id later
+        val sessionManager = SessionManager(requireContext())
+        val userId = sessionManager.getUserId()
+
+        FixPixelArt(requireContext()).removeFilter(binding.imgBackground)
+
+        db = Room.databaseBuilder(
+            requireContext(),
+            DataBase::class.java,
+            "NumaDB"
+        ).fallbackToDestructiveMigration().build()
+
+        val characterImageView = binding.character
+
+        characterImageView.setBackgroundResource(R.drawable.char_animation)
+
+        val characterAnimation = characterImageView.background as AnimationDrawable
+        characterAnimation.start()
+
+        loadHabits(userId)
+
+        return binding.root
+    }
+
+    private fun loadHabits(userId: Int?) {
+        lifecycleScope.launch {
+
+            val uid = userId ?: return@launch
+
+            val today = LocalDate.now().dayOfWeek.name
+            val specificDate =
+                LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+
+            val habitsForDate = db.habitDao().getHabitsForDate(today, specificDate, uid)
+            val habitsCompleted = db.habitDao().getCompletedHabitsForDate(today, specificDate, uid)
+
+            val titleHabits = binding.tvHabitsTitle
+            val titleCompleted = binding.tvCompletedHabitsTitle
+
+            if (habitsForDate.isEmpty() && habitsCompleted.isEmpty()) {
+                titleHabits.visibility = View.GONE
+                titleCompleted.visibility = View.GONE
+                binding.tvInfo.visibility = View.VISIBLE
+                return@launch
+            }
+
+            if (habitsForDate.isEmpty()) {
+                titleHabits.visibility = View.GONE
+            } else {
+                titleHabits.visibility = View.VISIBLE
+                binding.rvHabits.apply {
+                    layoutManager = LinearLayoutManager(requireContext())
+                    adapter = HabitAdapter(habitsForDate.toMutableList())
+                }
+            }
+
+            if (habitsCompleted.isEmpty()) {
+                titleCompleted.visibility = View.GONE
+            } else {
+                titleCompleted.visibility = View.VISIBLE
+                binding.rvCompletedHabits.apply {
+                    layoutManager = LinearLayoutManager(requireContext())
+                    adapter = HabitAdapter(habitsCompleted.toMutableList())
+                }
+            }
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false)
-    }
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment HomeFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            HomeFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
-    }
 }
