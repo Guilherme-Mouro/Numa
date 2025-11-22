@@ -18,10 +18,9 @@ interface SleepDao {
     @Delete
     suspend fun deleteSleep(sleep: Sleep)
 
-    @Query("UPDATE sleep SET duration = :duration, timesAwake = :timesAwake, score = :score, points = :points, experience = :experience WHERE id = :sleepId")
+    @Query("UPDATE sleep SET timesAwake = :timesAwake, score = :score, points = :points, experience = :experience WHERE id = :sleepId")
     suspend fun updateSleep(
         sleepId: Int,
-        duration: Long,
         timesAwake: Int,
         score: Double,
         points: Int,

@@ -18,6 +18,7 @@ import com.example.numa.adapter.HabitAdapter
 import com.example.numa.adapter.WeekAdapter
 import com.example.numa.databinding.FragmentHabitBinding
 import com.example.numa.entity.Habit
+import com.example.numa.util.DatabaseProvider
 import com.example.numa.util.SessionManager
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +32,7 @@ class HabitFragment : Fragment() {
 
     private var _binding: FragmentHabitBinding? = null
     private val binding get() = _binding!!
-    private lateinit var db: DataBase
+    private val db by lazy { DatabaseProvider.getDatabase(requireContext()) }
     private lateinit var habitsAdapter: HabitAdapter
     private var selectedDay: LocalDate = LocalDate.now()
 
@@ -45,12 +46,6 @@ class HabitFragment : Fragment() {
         // Creating the sessionManager variable to be able to check the user Id later
         val sessionManager = SessionManager(requireContext())
         val userId = sessionManager.getUserId()
-
-        db = Room.databaseBuilder(
-            requireContext(),
-            DataBase::class.java,
-            "NumaDB"
-        ).fallbackToDestructiveMigration().build()
 
         //Handling the add Habit button
         binding.btnAddHabit.setOnClickListener {

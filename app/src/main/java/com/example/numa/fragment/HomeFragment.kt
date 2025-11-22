@@ -15,6 +15,7 @@ import com.example.numa.DataBase
 import com.example.numa.R
 import com.example.numa.adapter.HabitAdapter
 import com.example.numa.databinding.FragmentHomeBinding
+import com.example.numa.util.DatabaseProvider
 import com.example.numa.util.FixPixelArt
 import com.example.numa.util.SessionManager
 import kotlinx.coroutines.launch
@@ -25,7 +26,7 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private lateinit var db: DataBase
+    private val db by lazy { DatabaseProvider.getDatabase(requireContext()) }
     private lateinit var habitsAdapter: HabitAdapter
 
     override fun onCreateView(
@@ -40,12 +41,6 @@ class HomeFragment : Fragment() {
         val userId = sessionManager.getUserId()
 
         FixPixelArt(requireContext()).removeFilter(binding.imgBackground)
-
-        db = Room.databaseBuilder(
-            requireContext(),
-            DataBase::class.java,
-            "NumaDB"
-        ).fallbackToDestructiveMigration().build()
 
         val characterImageView = binding.character
 

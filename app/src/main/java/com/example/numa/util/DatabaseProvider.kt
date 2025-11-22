@@ -15,7 +15,7 @@ object DatabaseProvider {
                 context.applicationContext,
                 DataBase::class.java,
                 "NumaDB"
-            ).build()
+            ).fallbackToDestructiveMigration().build()
 
             INSTANCE = instance
             instance

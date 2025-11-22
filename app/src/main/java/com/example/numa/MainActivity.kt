@@ -22,9 +22,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var lastSelectedView: View? = null
-    // 🛑 REMOVIDO: private lateinit var db: DataBase
 
-    // Lazy initialization
     private val database by lazy { DatabaseProvider.getDatabase(this) }
     private val achievementRepository by lazy {
         AchievementRepository(database.achievementDao())

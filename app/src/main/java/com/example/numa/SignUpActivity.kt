@@ -43,7 +43,8 @@ class SignUpActivity : AppCompatActivity() {
             val newUser = User(
                 name = biding.edName.text.toString(),
                 streak = 0,
-                points = 0
+                points = 0,
+                level = 1,
             )
 
             lifecycleScope.launch {

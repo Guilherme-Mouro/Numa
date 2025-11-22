@@ -13,6 +13,7 @@ import com.example.numa.CheckAchievementRepository
 import com.example.numa.DataBase
 import com.example.numa.databinding.FragmentAddHabitBinding
 import com.example.numa.entity.Habit
+import com.example.numa.util.DatabaseProvider
 import com.example.numa.util.SessionManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.Dispatchers
@@ -26,9 +27,8 @@ class AddHabitFragment : BottomSheetDialogFragment() {
 
     private var _binding: FragmentAddHabitBinding? = null
     private val binding get() = _binding!!
-
-    private lateinit var checkAchievementRepository: CheckAchievementRepository // Novo Repositório
-    private lateinit var db: DataBase
+    private val db by lazy { DatabaseProvider.getDatabase(requireContext()) }
+    private lateinit var checkAchievementRepository: CheckAchievementRepository
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,11 +37,6 @@ class AddHabitFragment : BottomSheetDialogFragment() {
     ): View {
         _binding = FragmentAddHabitBinding.inflate(inflater, container, false)
 
-        db = Room.databaseBuilder(
-            requireContext(),
-            DataBase::class.java,
-            "NumaDB"
-        ).fallbackToDestructiveMigration().build()
         checkAchievementRepository = CheckAchievementRepository(
             db.achievementDao(),
             db.achievementUserDao(),
