@@ -21,6 +21,7 @@ data class Pet(
 
     val humor: String,
 
+    val skin: String,
     val head: String?,
     val torso: String?,
     val legs: String?,

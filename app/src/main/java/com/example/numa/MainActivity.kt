@@ -34,9 +34,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
-
-        // ✅ INICIALIZAR ACHIEVEMENTS
         initializeAchievements()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -52,14 +49,18 @@ class MainActivity : AppCompatActivity() {
         val userId = sessionManager.getUserId()
         //sessionManager.deleteUserId()
 
+        loadUserDetails(userId)
+    }
 
-
+    private fun loadUserDetails(userId: Int?) {
         lifecycleScope.launch {
             userId?.let {
-                val user = database.userDao().getUserById(userId) 
+                val user = database.userDao().getUserById(userId)
 
                 user?.let {
                     binding.tvUserName.text = it.name
+                    binding.tvUserLevel.text = it.level.toString()
+                    binding.tvPoints.text = it.points.toString()
                 }
             }
         }

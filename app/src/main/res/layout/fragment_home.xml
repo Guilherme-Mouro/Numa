@@ -12,19 +12,14 @@
         android:id="@+id/framePet"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="40">
-        
+        android:layout_weight="40"
+        android:background="@color/menu">
+
         <ImageView
-            android:id="@+id/imgBackground"
+            android:id="@+id/imgPet"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="fitXY"
-            android:src="@drawable/room"/>
-
-        <ImageView
-            android:id="@+id/character"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:layout_gravity="center"/>
         
     </FrameLayout>

@@ -40,18 +40,27 @@ class HomeFragment : Fragment() {
         val sessionManager = SessionManager(requireContext())
         val userId = sessionManager.getUserId()
 
-        FixPixelArt(requireContext()).removeFilter(binding.imgBackground)
-
-        val characterImageView = binding.character
-
-        characterImageView.setBackgroundResource(R.drawable.char_animation)
-
-        val characterAnimation = characterImageView.background as AnimationDrawable
-        characterAnimation.start()
-
+        loadPet(userId)
         loadHabits(userId)
 
         return binding.root
+    }
+
+    private fun loadPet(userId: Int?) {
+        lifecycleScope.launch {
+            userId?.let {
+                val pet = db.petDao().getPetByUser(userId)
+
+                //Pet skin
+                val petSprite = binding.imgPet
+                val petSkin = resources.getIdentifier(pet?.skin, "drawable", requireContext().packageName)
+                petSprite.setBackgroundResource(petSkin)
+                FixPixelArt(requireContext()).removeAnimFilter(petSprite)
+
+                val petAnim = petSprite.background as AnimationDrawable
+                petAnim.start()
+            }
+        }
     }
 
     private fun loadHabits(userId: Int?) {
