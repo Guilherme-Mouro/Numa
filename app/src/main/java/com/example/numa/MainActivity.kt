@@ -13,16 +13,25 @@ import com.example.numa.databinding.ActivityMainBinding
 import com.example.numa.fragment.HabitFragment
 import com.example.numa.fragment.HomeFragment
 import com.example.numa.fragment.QuestFragment
+import com.example.numa.fragment.ShopFragment
 import com.example.numa.fragment.SleepFragment
 import com.example.numa.util.DatabaseProvider
 import com.example.numa.util.SessionManager
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+    private val menuOrder = listOf(
+        R.id.home,
+        R.id.shop,
+        R.id.habit,
+        R.id.sleep,
+        R.id.quest
+    )
+    private var lastMenuItemId: Int = R.id.home
+
 
     private lateinit var binding: ActivityMainBinding
     private var lastSelectedView: View? = null
-
     private val database by lazy { DatabaseProvider.getDatabase(this) }
     private val achievementRepository by lazy {
         AchievementRepository(database.achievementDao())
@@ -39,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        changeMenuItem(HomeFragment())
+        changeMenuItem(HomeFragment(), R.id.home)
 
         lastSelectedView = binding.bottomNav.findViewById(R.id.home)
         resizeIcon(lastSelectedView, null)
@@ -66,21 +75,44 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun changeMenuItem(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.frameLayout, fragment)
+    private fun changeMenuItem(fragment: Fragment, newItemId: Int) {
+
+        val lastIndex = menuOrder.indexOf(lastMenuItemId)
+        val newIndex = menuOrder.indexOf(newItemId)
+
+        val transaction = supportFragmentManager.beginTransaction()
+
+        if (newIndex > lastIndex) {
+            // Indo para a direita → entra da direita, sai para a esquerda
+            transaction.setCustomAnimations(
+                R.anim.slide_in_right,
+                R.anim.slide_out_left
+            )
+        } else if (newIndex < lastIndex) {
+            // Indo para a esquerda → entra da esquerda, sai para a direita
+            transaction.setCustomAnimations(
+                R.anim.slide_in_left,
+                R.anim.slide_out_right
+            )
+        }
+
+        transaction.replace(R.id.frameLayout, fragment)
             .commit()
+
+        lastMenuItemId = newItemId
     }
 
     private fun changePage() {
         binding.bottomNav.setOnItemSelectedListener { item ->
+
             val selectedView = binding.bottomNav.findViewById<View>(item.itemId)
 
             when (item.itemId) {
-                R.id.home -> changeMenuItem(HomeFragment())
-                R.id.habit -> changeMenuItem(HabitFragment())
-                R.id.sleep -> changeMenuItem(SleepFragment())
-                R.id.quest -> changeMenuItem(QuestFragment())
+                R.id.home -> changeMenuItem(HomeFragment(), item.itemId)
+                R.id.shop -> changeMenuItem(ShopFragment(), item.itemId)
+                R.id.habit -> changeMenuItem(HabitFragment(), item.itemId)
+                R.id.sleep -> changeMenuItem(SleepFragment(), item.itemId)
+                R.id.quest -> changeMenuItem(QuestFragment(), item.itemId)
             }
 
             resizeIcon(selectedView, lastSelectedView)
@@ -89,6 +121,7 @@ class MainActivity : AppCompatActivity() {
             true
         }
     }
+
 
     private fun initializeAchievements() {
         lifecycleScope.launch {

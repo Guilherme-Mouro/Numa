@@ -12,7 +12,10 @@ import com.example.numa.R
 import com.example.numa.entity.Habit
 import com.google.android.material.card.MaterialCardView
 
-class HabitAdapter(val habits: MutableList<Habit>) : RecyclerView.Adapter<HabitAdapter.HabitViewHolder>() {
+class HabitAdapter(
+    val habits: MutableList<Habit>,
+    private val onHabitClick: (Habit) -> Unit
+) : RecyclerView.Adapter<HabitAdapter.HabitViewHolder>() {
 
     class HabitViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val title = itemView.findViewById<TextView>(R.id.tvHabitTitle)
@@ -52,6 +55,11 @@ class HabitAdapter(val habits: MutableList<Habit>) : RecyclerView.Adapter<HabitA
             holder.layoutDuration.visibility = View.GONE
         } else {
             holder.card.strokeWidth = 0
+        }
+
+        //Handles habit click
+        holder.itemView.setOnClickListener {
+            onHabitClick(habit)
         }
 
     }

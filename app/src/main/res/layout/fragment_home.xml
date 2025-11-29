@@ -8,21 +8,23 @@
     android:orientation="vertical"
     android:background="@color/background">
     
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/framePet"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="40"
+        android:orientation="horizontal"
         android:background="@color/menu">
 
         <ImageView
             android:id="@+id/imgPet"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_weight="40"
             android:scaleType="fitXY"
             android:layout_gravity="center"/>
         
-    </FrameLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

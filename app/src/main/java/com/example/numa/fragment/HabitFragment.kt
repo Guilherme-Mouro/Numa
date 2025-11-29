@@ -1,5 +1,6 @@
 package com.example.numa.fragment
 
+import android.content.Intent
 import android.opengl.Visibility
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import com.example.numa.DataBase
+import com.example.numa.HabitActivity
 import com.example.numa.R
 import com.example.numa.adapter.HabitAdapter
 import com.example.numa.adapter.WeekAdapter
@@ -149,7 +151,11 @@ class HabitFragment : Fragment() {
                     binding.tvInfoHabits.visibility = View.INVISIBLE
                 }
 
-                habitsAdapter = HabitAdapter(habits.toMutableList())
+                habitsAdapter = HabitAdapter(habits.toMutableList()) { habit ->
+                    val intent = Intent(requireContext(), HabitActivity::class.java)
+                    intent.putExtra("habitId" ,habit.id)
+                    startActivity(intent)
+                }
                 binding.rvHabits.adapter = habitsAdapter
             }
         }

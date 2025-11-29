@@ -1,5 +1,6 @@
 package com.example.numa.fragment
 
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.BitmapDrawable
@@ -12,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.room.Room
 import com.example.numa.DataBase
+import com.example.numa.HabitActivity
 import com.example.numa.R
 import com.example.numa.adapter.HabitAdapter
 import com.example.numa.databinding.FragmentHomeBinding
@@ -91,7 +93,11 @@ class HomeFragment : Fragment() {
                 titleHabits.visibility = View.VISIBLE
                 binding.rvHabits.apply {
                     layoutManager = LinearLayoutManager(requireContext())
-                    adapter = HabitAdapter(habitsForDate.toMutableList())
+                    adapter = HabitAdapter(habitsForDate.toMutableList()) { habit ->
+                        val intent = Intent(requireContext(), HabitActivity::class.java)
+                        intent.putExtra("habitId" ,habit.id)
+                        startActivity(intent)
+                    }
                 }
             }
 
@@ -101,7 +107,9 @@ class HomeFragment : Fragment() {
                 titleCompleted.visibility = View.VISIBLE
                 binding.rvCompletedHabits.apply {
                     layoutManager = LinearLayoutManager(requireContext())
-                    adapter = HabitAdapter(habitsCompleted.toMutableList())
+                    adapter = HabitAdapter(habitsCompleted.toMutableList()) { habit ->
+
+                    }
                 }
             }
         }
