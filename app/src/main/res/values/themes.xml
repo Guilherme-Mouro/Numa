@@ -1,9 +1,29 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Numa" parent="Theme.Material3.DayNight.NoActionBar">
 
+    <!-- Base application theme -->
+    <style name="Base.Theme.Numa" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Aplicar estilos personalizados -->
+        <item name="android:numberPickerStyle">@style/WhiteNumberPickerStyle</item>
+        <item name="android:timePickerStyle">@style/WhiteTimePickerStyle</item>
     </style>
 
     <style name="Theme.Numa" parent="Base.Theme.Numa" />
+
+    <!-- Estilo para NumberPicker com texto branco -->
+    <style name="WhiteNumberPickerStyle" parent="@android:style/Widget.Material.NumberPicker">
+        <item name="android:textColorHighlight">#FFFFFF</item>
+        <item name="android:textColorSecondary">#FFFFFF</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+
+    <!-- Estilo para TimePicker com spinner branco -->
+    <style name="WhiteTimePickerStyle" parent="@android:style/Widget.Material.TimePicker">
+        <item name="android:textColorHighlight">#FFFFFF</item>
+        <item name="android:textColorSecondary">#FFFFFF</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:timePickerMode">spinner</item>
+    </style>
 
 </resources>

@@ -59,11 +59,11 @@
                 android:id="@+id/ivDiamond"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/ic_diamond"
+                android:src="@drawable/ic_point"
                 app:tint="#3B82F6"/>
 
             <TextView
-                android:id="@+id/tvDiamonds"
+                android:id="@+id/tvPoints"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="1324"

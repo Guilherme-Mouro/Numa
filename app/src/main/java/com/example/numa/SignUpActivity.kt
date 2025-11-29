@@ -1,28 +1,27 @@
 package com.example.numa
 
 import android.content.Intent
+import android.graphics.drawable.AnimationDrawable
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
 import com.example.numa.databinding.ActivitySignUpBinding
+import com.example.numa.entity.Pet
 import com.example.numa.entity.User
+import com.example.numa.util.DatabaseProvider
+import com.example.numa.util.FixPixelArt
 import com.example.numa.util.SessionManager
 import kotlinx.coroutines.launch
 
 class SignUpActivity : AppCompatActivity() {
 
-    private lateinit var biding: ActivitySignUpBinding
-
-    private lateinit var db: DataBase
+    private lateinit var binding: ActivitySignUpBinding
+    private val db by lazy { DatabaseProvider.getDatabase(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        biding = ActivitySignUpBinding.inflate(layoutInflater)
-        setContentView(biding.root)
+        binding = ActivitySignUpBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val sessionManager = SessionManager(this)
         val userID = sessionManager.getUserId()
@@ -32,16 +31,19 @@ class SignUpActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
+        val characterImageView = binding.imgAnim
 
-        db = Room.databaseBuilder(
-            this,
-            DataBase::class.java,
-            "NumaDB"
-        ).fallbackToDestructiveMigration().build()
+        characterImageView.setBackgroundResource(R.drawable.cat_banner_animation)
 
-        biding.btnSignUp.setOnClickListener {
+        FixPixelArt(this).removeAnimFilter(characterImageView)
+
+        val characterAnimation = characterImageView.background as AnimationDrawable
+        characterAnimation.start()
+
+
+        binding.btnSignUp.setOnClickListener {
             val newUser = User(
-                name = biding.edName.text.toString(),
+                name = binding.edName.text.toString(),
                 streak = 0,
                 points = 0,
                 level = 1,
@@ -52,6 +54,19 @@ class SignUpActivity : AppCompatActivity() {
 
                 val sessionManager = SessionManager(this@SignUpActivity)
                 sessionManager.saveUserId(userId)
+
+                val newPet = Pet(
+                    userId = userId,
+                    name = binding.edPetName.text.toString(),
+                    humor = "happy",
+                    skin = "black_cat_idle_animation",
+                    head = null,
+                    torso = null,
+                    legs = null,
+                    feet = null,
+                )
+
+                db.petDao().insertPet(newPet)
 
                 val intent = Intent(this@SignUpActivity, MainActivity::class.java)
                 startActivity(intent)
