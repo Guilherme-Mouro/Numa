@@ -1,18 +1,16 @@
 # Numa
 ---
-## Ideia Geral
-Uma app gamificado de bem-estar e hábitos que acompanha automaticamente o estilo de vida do utilizador — desde a qualidade do sono e níveis de atividade física até à consistência dos hábitos diários.
-O app não apenas regista dados, mas interpreta padrões e motiva o utilizador com feedback inteligente, pontos e recompensas virtuais.
----
-## Funcionalidades
-- Monitoriza o sono através da deteção de sons e regista padrões noturnos;
-- Conecta-se via Bluetooth a dispositivos inteligentes para sincronizar dados físicos;
-- Gamifica os hábitos diários com pontos, níveis e recompensas motivacionais;
-- Gera relatórios e insights personalizados com base nos dados (ROOM) do utilizador;
-- Envia lembretes e notificações inteligentes adaptadas ao comportamento do utilizador.
----
-## Gamification
-- O utilizador tem um pet virtual que irá refletir os seus hábitos;
-- Conforme o utilizador cria bons hábitos ganha pontos e melhora o estado do seu pet;
-- Os pontos podem ser usados para novas coisas para o pet;
-- Conforme o utilizador completa certas metas, recebe selos pela sua conquista.
+An app with gamification features designed to improve and encourage habits that align with the user’s lifestyle. From sleep quality and physical exercise to consistent daily routines. The app rewards users with points and scores to provide a more dynamic and engaging progress assessment.
+
+## Main Features
+- Monitors sleep through sound detection and records nighttime patterns;
+- Connects via Bluetooth to smart devices to sync physical data;
+- Gamifies daily habits with points, levels, and motivational rewards;
+- Generates personalized reports and insights based on the user’s (ROOM) data;
+- Sends intelligent reminders and notifications adapted to the user’s behavior.
+
+## Gamification Features
+- The user has a virtual pet that reflects their habits;
+- As the user builds good habits, they earn points and improve their pet’s condition;
+- Points can be used to unlock new items for the pet;
+- As the user completes certain goals, they receive badges for their achievements.

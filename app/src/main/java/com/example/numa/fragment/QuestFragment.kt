@@ -2,7 +2,6 @@ package com.example.numa.fragment
 
 import android.app.AlertDialog
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,57 +9,87 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.GridLayoutManager
-import kotlinx.coroutines.launch
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.numa.R
-import com.example.numa.adapter.ProgressQuestAdapter
 import com.example.numa.adapter.AchievementAdapter
+import com.example.numa.adapter.ProgressQuestAdapter
 import com.example.numa.adapter.Quest
 import com.example.numa.databinding.FragmentQuestBinding
-import com.example.numa.util.DatabaseProvider
 import com.example.numa.entity.Achievement
+import com.example.numa.util.DatabaseProvider
+import com.example.numa.util.LevelUp // ✅ Importante: Importar a utilitária de Level
 import com.example.numa.util.SessionManager
+import kotlinx.coroutines.launch
 
 class QuestFragment : Fragment() {
 
-    private lateinit var binding: FragmentQuestBinding
+    private var _binding: FragmentQuestBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var progressAdapter: ProgressQuestAdapter
     private lateinit var achievementAdapter: AchievementAdapter
 
-    // ✅ CORREÇÃO: Inicializa o SessionManager para ser usado nos métodos load
     private val sessionManager by lazy { SessionManager(requireContext()) }
-
     private val database by lazy { DatabaseProvider.getDatabase(requireContext()) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        binding = FragmentQuestBinding.inflate(inflater, container, false)
+    ): View {
+        _binding = FragmentQuestBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Configurar o spinner
+        // 1. Configurar componentes da UI
         setupSpinner()
-
-        // RecyclerView de Quests
         setupProgressQuestRecyclerView()
-
-        // RecyclerView de Achievements
         setupAchievementsRecyclerView()
 
-        // Carregar achievements
+        // 2. Carregar dados
         loadAchievements()
+
+        // ✅ 3. Carregar Estatísticas do User (Level e XP)
+        loadUserStats()
+    }
+
+    // ✅ NOVA FUNÇÃO: Atualiza o texto do nível e XP
+    private fun loadUserStats() {
+        lifecycleScope.launch {
+            val userId = sessionManager.getUserId()
+
+            if (userId != null) {
+                val user = database.userDao().getUserById(userId)
+
+                if (user != null) {
+                    val xpNextLevel = LevelUp.xpForLevel(user.level)
+
+                    // Atualiza Level
+                    binding.tvUserLevel.text = "Lvl ${user.level}"
+
+                    // ✅ Atualiza Pontos (NOVO)
+                    binding.tvUserPoints.text = "${user.points} Pts"
+
+                    // Atualiza XP
+                    binding.tvUserXP.text = "${user.experience} / $xpNextLevel XP"
+                }
+            }
+        }
     }
 
     private fun setupSpinner() {
-        val spinner = binding.root.findViewById<Spinner>(R.id.spinner)
+        // ✅ Correção: Acede através do ID do include
+        // Se o teu ficheiro spinner.xml tem um Spinner com id "spinner":
+        val spinner = binding.includeSpinner.spinner
+
+        // (Se der erro no .spinner, verifica se o ID dentro de spinner.xml é mesmo "spinner")
+
         val items = arrayOf("See All", "Desbloqueados", "Bloqueados")
 
         val adapterSpinner = object : ArrayAdapter<String>(
@@ -86,7 +115,6 @@ class QuestFragment : Fragment() {
         adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapterSpinner
 
-        // Listener para mudar achievements quando spinner muda
         spinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
                 when (position) {
@@ -101,7 +129,6 @@ class QuestFragment : Fragment() {
     }
 
     private fun setupProgressQuestRecyclerView() {
-        // Dados de exemplo
         val quests = listOf(
             Quest("Complete 3 habits", 40),
             Quest("Read 20 pages", 60),
@@ -112,12 +139,11 @@ class QuestFragment : Fragment() {
         progressAdapter = ProgressQuestAdapter(quests)
         binding.rvProgressQuest.apply {
             adapter = progressAdapter
-            layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+            layoutManager = LinearLayoutManager(requireContext())
         }
     }
 
     private fun setupAchievementsRecyclerView() {
-        // Inicializa o Adapter e define a ação de clique para mostrar o AlertDialog
         achievementAdapter = AchievementAdapter { achievement ->
             showSimpleDetailsDialog(achievement)
         }
@@ -130,14 +156,12 @@ class QuestFragment : Fragment() {
     }
 
     private fun loadAchievements() {
-        // Por padrão, carrega todos os achievements na inicialização
         loadAllAchievements()
     }
 
     private fun loadAllAchievements() {
         lifecycleScope.launch {
             try {
-                // Carrega todos, independentemente do usuário
                 val achievements = database.achievementDao().getAllAchievements()
                 achievementAdapter.setAchievements(achievements)
             } catch (e: Exception) {
@@ -149,15 +173,12 @@ class QuestFragment : Fragment() {
     private fun loadUnlockedAchievements() {
         lifecycleScope.launch {
             try {
-                // Obtém o ID do usuário da sessão
                 val userId = sessionManager.getUserId()
-
                 if (userId != null) {
                     val achievements = database.achievementUserDao()
                         .getUnlockedAchievementsForUser(userId)
                     achievementAdapter.setAchievements(achievements)
                 } else {
-                    // Limpar ou mostrar uma mensagem de erro se o ID não for encontrado
                     achievementAdapter.setAchievements(emptyList())
                 }
             } catch (e: Exception) {
@@ -169,15 +190,12 @@ class QuestFragment : Fragment() {
     private fun loadLockedAchievements() {
         lifecycleScope.launch {
             try {
-                // Obtém o ID do usuário da sessão
                 val userId = sessionManager.getUserId()
-
                 if (userId != null) {
                     val achievements = database.achievementUserDao()
                         .getLockedAchievementsForUser(userId)
                     achievementAdapter.setAchievements(achievements)
                 } else {
-                    // Limpar ou mostrar uma mensagem de erro se o ID não for encontrado
                     achievementAdapter.setAchievements(emptyList())
                 }
             } catch (e: Exception) {
@@ -186,11 +204,8 @@ class QuestFragment : Fragment() {
         }
     }
 
-    // Criar a função simples para mostrar os detalhes (AlertDialog)
     private fun showSimpleDetailsDialog(achievement: Achievement) {
         val context = requireContext()
-
-        // Conteúdo da mensagem
         val message = "Level: ${achievement.level}\n\n${achievement.description}"
 
         AlertDialog.Builder(context)
@@ -200,5 +215,10 @@ class QuestFragment : Fragment() {
                 dialog.dismiss()
             }
             .show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

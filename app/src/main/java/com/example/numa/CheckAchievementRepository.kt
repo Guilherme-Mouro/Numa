@@ -13,6 +13,9 @@ class CheckAchievementRepository(
     private val habitDao: HabitDao
 ) {
 
+    // ✅ 1. Inicializa o teu UserRepository aqui usando o userDao existente
+    private val userRepository = UserRepository(userDao)
+
     suspend fun checkAndUnlockAchievement(userId: Int, type: String, level: Int) {
         val achievement = achievementDao.getAchievementByTypeAndLevel(type, level) ?: return
 
@@ -30,13 +33,16 @@ class CheckAchievementRepository(
                 )
             )
 
-            // Adiciona pontos ao user
-            val user = userDao.getUserById(userId)
-            userDao.updatePoints(userId, user!!.points + achievement.points)
+            // ✅ 2. Usa a função do UserRepository para dar XP e Pontos
+            userRepository.addXpAndPoints(
+                userId = userId,
+                xpEarned = achievement.experience,
+                pointsEarned = achievement.points
+            )
         }
     }
 
-    // Verificar todos os achievements quando completa um hábito
+    // O resto da função mantém-se exatamente igual
     suspend fun checkAllAchievements(userId: Int, habitId: Int? = null) {
         val user = userDao.getUserById(userId) ?: return
         val habits = habitDao.getHabitsByUser(userId)

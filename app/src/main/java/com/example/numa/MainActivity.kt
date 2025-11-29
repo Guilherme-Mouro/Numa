@@ -62,6 +62,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadUserDetails(userId: Int?) {
+
         lifecycleScope.launch {
             userId?.let {
                 val user = database.userDao().getUserById(userId)
