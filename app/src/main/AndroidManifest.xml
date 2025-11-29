@@ -12,10 +12,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Numa">
         <activity
-            android:name=".HabitActivity"
+            android:name=".activity.HabitActivity"
             android:exported="false" />
         <activity
-            android:name=".SignUpActivity"
+            android:name=".activity.SignUpActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".activity.MainActivity"
             android:exported="false" />
     </application>
 

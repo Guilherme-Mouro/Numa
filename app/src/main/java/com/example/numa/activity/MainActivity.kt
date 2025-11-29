@@ -1,14 +1,14 @@
-package com.example.numa
+package com.example.numa.activity
 
-import android.content.Context
 import android.os.Bundle
-import android.view.View
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.core.content.edit
-import kotlinx.coroutines.launch
+import com.example.numa.AchievementRepository
+import com.example.numa.R
 import com.example.numa.databinding.ActivityMainBinding
 import com.example.numa.fragment.HabitFragment
 import com.example.numa.fragment.HomeFragment
@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         AchievementRepository(database.achievementDao())
     }
     private val sharedPref by lazy {
-        getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        getSharedPreferences("app_prefs", MODE_PRIVATE)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

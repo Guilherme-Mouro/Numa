@@ -13,7 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.room.Room
 import com.example.numa.DataBase
-import com.example.numa.HabitActivity
+import com.example.numa.activity.HabitActivity
 import com.example.numa.R
 import com.example.numa.adapter.HabitAdapter
 import com.example.numa.databinding.FragmentHomeBinding

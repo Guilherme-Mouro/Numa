@@ -1,16 +1,9 @@
-package com.example.numa
+package com.example.numa.activity
 
-import android.graphics.Paint
 import android.os.Bundle
-import android.widget.EditText
-import android.widget.NumberPicker
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.numa.databinding.ActivityHabitBinding
-import com.example.numa.databinding.ActivityMainBinding
 import com.example.numa.util.DatabaseProvider
 import kotlinx.coroutines.launch
 

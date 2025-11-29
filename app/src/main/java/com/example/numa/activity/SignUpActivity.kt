@@ -1,10 +1,11 @@
-package com.example.numa
+package com.example.numa.activity
 
 import android.content.Intent
 import android.graphics.drawable.AnimationDrawable
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.example.numa.R
 import com.example.numa.databinding.ActivitySignUpBinding
 import com.example.numa.entity.Pet
 import com.example.numa.entity.User
