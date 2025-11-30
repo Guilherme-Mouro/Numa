@@ -30,7 +30,7 @@ import com.example.numa.entity.UserItem
         ShopItem::class,
         UserItem::class,
                ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 

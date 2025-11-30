@@ -12,4 +12,5 @@ data class ShopItem(
     val price: Double,
     val image: String,
     val item: String,
+    val type: String,
 )
