@@ -45,4 +45,5 @@ abstract class DataBase : RoomDatabase() {
     abstract fun shopItemDao(): ShopItemDao
     abstract fun userItemDao(): UserItemDao
 
+
 }

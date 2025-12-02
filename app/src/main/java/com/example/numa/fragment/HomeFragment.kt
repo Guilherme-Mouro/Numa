@@ -57,7 +57,7 @@ class HomeFragment : Fragment() {
                 val petSprite = binding.imgPet
                 val petSkin = resources.getIdentifier(pet?.skin, "drawable", requireContext().packageName)
                 petSprite.setBackgroundResource(petSkin)
-                FixPixelArt(requireContext()).removeAnimFilter(petSprite)
+                FixPixelArt.removeAnimFilter(petSprite)
 
                 val petAnim = petSprite.background as AnimationDrawable
                 petAnim.start()
