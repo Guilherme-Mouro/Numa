@@ -9,7 +9,7 @@ data class ShopItem(
 
     val name: String,
     val description: String,
-    val price: Double,
+    val price: Int,
     val image: String,
     val item: String,
     val type: String,

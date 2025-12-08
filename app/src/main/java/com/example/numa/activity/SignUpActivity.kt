@@ -25,14 +25,13 @@ class SignUpActivity : AppCompatActivity() {
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        lifecycleScope.launch {
-            if(db.shopItemDao().getAllShopItem().isEmpty()) {
-                DatabaseProvider.addStoreItems(this@SignUpActivity)
-            }
-        }
-
         val sessionManager = SessionManager(this)
         val userID = sessionManager.getUserId()
+
+        lifecycleScope.launch {
+            db.shopItemDao().deleteAll()
+            DatabaseProvider.addStoreItems(this@SignUpActivity)
+        }
 
         if (userID != null) {
             val intent = Intent(this, MainActivity::class.java)

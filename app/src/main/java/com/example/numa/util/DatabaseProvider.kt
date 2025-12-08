@@ -27,12 +27,24 @@ object DatabaseProvider {
         }
     }
 
-// Em DatabaseProvider.kt
     suspend fun addStoreItems(context: Context) {
         val db = getDatabase(context)
+        val dao = db.shopItemDao()
 
-        // Apenas chame o insert. Como é suspend, ele vai esperar terminar.
-        // Certifique-se que o método insertAll no DAO também seja 'suspend'
-        db.shopItemDao().insertAll(DefaultShopItems.items)
+        val existing = dao.getAllShopItem()
+        val defaults = DefaultShopItems.items
+
+        val newOnes = defaults.filter { defItem ->
+            existing.none {
+                it.name == defItem.name
+                it.price == defItem.price
+            }
+        }
+
+        if (newOnes.isNotEmpty()) {
+            dao.deleteAll()
+            dao.insertAll(newOnes)
+        }
     }
+
 }
