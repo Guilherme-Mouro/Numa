@@ -22,8 +22,8 @@ data class Habit (
     val startTime: Long,
     val duration: Long,
     val experience: Int,
-    val streak: Int,
-    val state: String,
+    var streak: Int,
+    var state: String,
 
     val isRecurring: Boolean,
     val dayOfWeek: String? = null,
