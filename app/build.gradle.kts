@@ -60,4 +60,7 @@ dependencies {
 
     implementation("com.jakewharton.threetenabp:threetenabp:1.4.4")
 
+    // Sleep API
+    implementation("com.google.android.gms:play-services-location:21.2.0")
+
 }

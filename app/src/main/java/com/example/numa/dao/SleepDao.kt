@@ -6,14 +6,17 @@ import com.example.numa.entity.Sleep
 @Dao
 interface SleepDao {
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSleep(sleep: Sleep): Long
+
+    @Query("SELECT * FROM sleep WHERE userId = :userId ORDER BY endTime DESC LIMIT 1")
+    suspend fun getLatestSleepForUser(userId: Int): Sleep?
+
     @Query("SELECT * FROM sleep WHERE userId = :userId")
-    suspend fun getSleepByUser(userId: Int): List<Sleep>
+    suspend fun getAllSleepForUser(userId: Int): List<Sleep>
 
     @Query("SELECT * FROM sleep WHERE id = :sleepId")
     suspend fun getSleepById(sleepId: Int): Sleep?
-
-    @Insert
-    suspend fun insertSleep(sleep: Sleep): Long
 
     @Delete
     suspend fun deleteSleep(sleep: Sleep)
