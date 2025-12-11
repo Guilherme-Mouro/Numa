@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.numa.databinding.FragmentSleepBinding
@@ -19,10 +20,7 @@ import com.example.numa.services.SleepTrackingService
 import com.example.numa.util.DatabaseProvider
 import com.example.numa.util.SessionManager
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.concurrent.TimeUnit
+import java.util.Calendar
 
 class SleepFragment : Fragment() {
 
@@ -37,7 +35,6 @@ class SleepFragment : Fragment() {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         if (permissions.all { it.value }) {
-            // Todas as permissões foram concedidas
             startTrackingService()
         } else {
             Toast.makeText(requireContext(), "São necessárias permissões para monitorar o sono.", Toast.LENGTH_LONG).show()
@@ -58,48 +55,47 @@ class SleepFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Atualizar a UI sempre que o fragmento se torna visível
         updateButtonUI()
+        loadTodaysSleepData()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        loadLatestSleepData()
-
         binding.btnToggleSleepTracking.setOnClickListener {
             toggleTracking(!isTracking)
         }
     }
 
-    private fun loadLatestSleepData() {
+    private fun loadTodaysSleepData() {
         val sessionManager = SessionManager(requireContext())
         val userId = sessionManager.getUserId()
 
         if (userId == null) {
-            binding.tvScore.text = "--"
-            binding.tvQuality.text = "Faça login"
-            binding.tvDuration.text = ""
+            binding.rvSleepSegments.isVisible = false
+            binding.tvNoData.isVisible = true
+            binding.tvNoData.text = "Faça login para ver os seus registos."
             return
         }
 
         lifecycleScope.launch {
             val sleepDao = DatabaseProvider.getDatabase(requireContext()).sleepDao()
-            val latestSleep = sleepDao.getLatestSleepForUser(userId)
 
-            if (latestSleep != null) {
-                val durationMillis = latestSleep.endTime - latestSleep.startTime
-                val hours = TimeUnit.MILLISECONDS.toHours(durationMillis)
-                val minutes = TimeUnit.MILLISECONDS.toMinutes(durationMillis) % 60
+            // Define o período de "hoje" (ex: das 18h de ontem até agora)
+            val calendar = Calendar.getInstance()
+            calendar.add(Calendar.DAY_OF_YEAR, -1)
+            calendar.set(Calendar.HOUR_OF_DAY, 18)
+            val sinceMillis = calendar.timeInMillis
 
-                binding.tvScore.text = latestSleep.score.toInt().toString()
-                binding.tvQuality.text = latestSleep.quality
-                binding.tvDuration.text = String.format("%dh %02dm", hours, minutes)
-                binding.tvDate.text = SimpleDateFormat("dd MMMM, yyyy", Locale.getDefault()).format(Date(latestSleep.date))
+            val sleepSegments = sleepDao.getSleepSegmentsSince(userId, sinceMillis)
+
+            if (sleepSegments.isNotEmpty()) {
+                binding.rvSleepSegments.adapter = SleepSegmentAdapter(sleepSegments)
+                binding.rvSleepSegments.isVisible = true
+                binding.tvNoData.isVisible = false
             } else {
-                binding.tvScore.text = "--"
-                binding.tvQuality.text = "Sem dados"
-                binding.tvDuration.text = "--"
-                binding.tvDate.text = "Nenhum registo encontrado"
+                binding.rvSleepSegments.isVisible = false
+                binding.tvNoData.isVisible = true
+                binding.tvNoData.text = "Nenhum registo de sono para hoje."
             }
         }
     }

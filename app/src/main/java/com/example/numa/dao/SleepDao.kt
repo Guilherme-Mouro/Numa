@@ -9,6 +9,9 @@ interface SleepDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSleep(sleep: Sleep): Long
 
+    @Query("SELECT * FROM sleep WHERE userId = :userId AND startTime >= :sinceMillis ORDER BY startTime DESC")
+    suspend fun getSleepSegmentsSince(userId: Int, sinceMillis: Long): List<Sleep>
+
     @Query("SELECT * FROM sleep WHERE userId = :userId ORDER BY endTime DESC LIMIT 1")
     suspend fun getLatestSleepForUser(userId: Int): Sleep?
 
