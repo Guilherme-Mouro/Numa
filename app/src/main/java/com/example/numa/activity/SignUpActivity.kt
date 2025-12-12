@@ -38,6 +38,7 @@ class SignUpActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
+
         val characterImageView = binding.imgAnim
 
         characterImageView.setBackgroundResource(R.drawable.cat_banner_animation)
