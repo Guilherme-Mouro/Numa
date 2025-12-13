@@ -37,6 +37,11 @@ class SleepSegmentAdapter(private val sleepSegments: List<Sleep>) : RecyclerView
             val hours = TimeUnit.MILLISECONDS.toHours(durationMillis)
             val minutes = TimeUnit.MILLISECONDS.toMinutes(durationMillis) % 60
             binding.tvSegmentDuration.text = String.format("%dh %02dm", hours, minutes)
+
+            // Preencher os novos campos
+            binding.tvScore.text = segment.score.toInt().toString()
+            binding.tvQuality.text = segment.quality
+            binding.tvExperience.text = "+${segment.experience}"
         }
     }
 }
