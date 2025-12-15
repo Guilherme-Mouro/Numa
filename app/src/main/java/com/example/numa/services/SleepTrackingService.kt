@@ -36,7 +36,7 @@ class SleepTrackingService : Service() {
     override fun onCreate() {
         super.onCreate()
         val sleepDataIntent = Intent(applicationContext, SleepDataReceiver::class.java)
-        
+
         val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         } else {
@@ -65,7 +65,8 @@ class SleepTrackingService : Service() {
                 trackingPrefs.edit().putBoolean("is_tracking", true).apply()
             }
             ACTION_STOP_TRACKING -> {
-                stopSelf()
+                // Iniciar o processo de paragem ordenada
+                unsubscribeAndStop()
             }
         }
 
@@ -103,13 +104,16 @@ class SleepTrackingService : Service() {
             }
     }
 
-    private fun unsubscribeFromSleepUpdates() {
+    private fun unsubscribeAndStop() {
+        Log.d("SleepTrackingService", "Iniciando o processo de paragem...")
         activityRecognitionClient.removeSleepSegmentUpdates(sleepPendingIntent)
             .addOnSuccessListener {
-                Log.d("SleepTrackingService", "Inscrição de sono removida com sucesso.")
+                Log.i("SleepTrackingService", "Inscrição removida com sucesso. A parar o serviço.")
+                stopSelf() // Parar o serviço SÓ DEPOIS de a remoção ter sucesso.
             }
             .addOnFailureListener { e ->
-                Log.e("SleepTrackingService", "Falha ao remover inscrição de sono.", e)
+                Log.e("SleepTrackingService", "Falha ao remover inscrição. A forçar a paragem do serviço.", e)
+                stopSelf() // Parar mesmo em caso de falha para não deixar o serviço "preso".
             }
     }
 
@@ -127,8 +131,8 @@ class SleepTrackingService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d("SleepTrackingService", "Serviço destruído.")
-        unsubscribeFromSleepUpdates()
+        // Esta é a limpeza final. Garante que o estado é 'false' quando o serviço morre.
         trackingPrefs.edit().putBoolean("is_tracking", false).apply()
+        Log.i("SleepTrackingService", "Serviço destruído e estado de monitoramento definido como 'false'.")
     }
 }
