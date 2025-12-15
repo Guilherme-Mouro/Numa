@@ -49,10 +49,10 @@ class SleepDataReceiver : BroadcastReceiver() {
                     Log.d("SleepDataReceiver", "> Processando evento: Início=$startTimeFormatted, Fim=$endTimeFormatted, Status=${event.status}")
 
                     // FILTRO DE RELEVÂNCIA: Apenas guardar eventos que começaram no período de "hoje".
-                    if (event.startTimeMillis < sinceMillis) {
-                        Log.w("SleepDataReceiver", "  -> IGNORADO (Evento é de um dia anterior)")
-                        continue
-                    }
+                    //if (event.startTimeMillis < sinceMillis) {
+                       // Log.w("SleepDataReceiver", "  -> IGNORADO (Evento é de um dia anterior)")
+                        //continue
+                    //}
 
                     if (event.status == SleepSegmentEvent.STATUS_SUCCESSFUL) {
                         val newSleep = Sleep(
