@@ -9,6 +9,9 @@ interface ShopItemDao {
     @Query("SELECT * FROM shopItem")
     suspend fun getAllShopItem(): List<ShopItem>
 
+    @Query("SELECT * FROM shopItem WHERE type= :type")
+    suspend fun getShopItemByType(type: String): List<ShopItem>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(items: List<ShopItem>)
 

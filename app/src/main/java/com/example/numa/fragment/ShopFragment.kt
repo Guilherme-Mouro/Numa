@@ -8,15 +8,14 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.numa.R
+import androidx.recyclerview.widget.RecyclerView
 import com.example.numa.adapter.ShopItemAdapter
-import com.example.numa.databinding.FragmentHomeBinding
 import com.example.numa.databinding.FragmentShopBinding
+import com.example.numa.entity.ShopItem
 import com.example.numa.entity.UserItem
 import com.example.numa.util.DatabaseProvider
 import com.example.numa.util.SessionManager
 import kotlinx.coroutines.launch
-import java.util.Date
 
 class ShopFragment : Fragment() {
     private var _binding: FragmentShopBinding? = null
@@ -27,7 +26,7 @@ class ShopFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentShopBinding.inflate(inflater, container, false)
 
         val sessionManager = SessionManager(requireContext())
@@ -38,76 +37,105 @@ class ShopFragment : Fragment() {
             return binding.root
         }
 
+        val types = mapOf(
+            "skin" to binding.rvShopItemsSkins,
+            "head" to binding.rvShopItemsHead,
+            "torso" to binding.rvShopItemsTorso,
+            "legs" to binding.rvShopItemsLegs,
+            "feet" to binding.rvShopItemsFeet,
+            "background" to binding.rvShopItemsBackground
+        )
+
         lifecycleScope.launch {
-
-            val shopItems = db.shopItemDao().getAllShopItem()
-
-            val user = db.userDao().getUserById(userId)
-            if (user == null) {
-                Toast.makeText(requireContext(), "Erro ao carregar utilizador", Toast.LENGTH_SHORT).show()
-                return@launch
-            }
-
-            var userPoints = user.points
 
             val ownedItemIds = db.userItemDao()
                 .getUserItemByUserId(userId)
                 .map { it.itemId }
                 .toSet()
 
-            binding.rvShopItems.apply {
-                layoutManager = LinearLayoutManager(requireContext())
-                adapter = ShopItemAdapter(
-                    shopItems = shopItems.toMutableList(),
-                    ownedItemIds = ownedItemIds,
-                ) { shopItem ->
-
-                    lifecycleScope.launch {
-                        val itemCost = shopItem.price
-
-                        if (userPoints < itemCost) {
-                            Toast.makeText(
-                                requireContext(),
-                                "Pontos insuficientes para comprar este item",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@launch
-                        }
-
-                        val userItem = UserItem(
-                            userId = userId,
-                            itemId = shopItem.id
-                        )
-
-                        val result = db.userItemDao().insertUserItem(userItem)
-
-                        if (result != -1L) {
-
-                            userPoints -= itemCost
-
-                            val updatedUser = user.copy(points = userPoints)
-                            db.userDao().updateUser(updatedUser)
-
-                            (adapter as ShopItemAdapter).addOwnedItem(shopItem.id)
-
-                            Toast.makeText(
-                                requireContext(),
-                                "Item comprado! (-$itemCost pontos)",
-                                Toast.LENGTH_SHORT
-                            ).show()
-
-                        } else {
-                            Toast.makeText(
-                                requireContext(),
-                                "Já tens este item",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                }
+            types.forEach { (type, recyclerView) ->
+                setupCategoryList(type, recyclerView, userId, ownedItemIds)
             }
+
         }
 
         return binding.root
+    }
+
+    private suspend fun setupCategoryList(
+        type: String,
+        recyclerView: RecyclerView,
+        userId: Int,
+        ownedItemIds: Set<Int>
+    ) {
+        val shopItems = db.shopItemDao().getShopItemByType(type)
+
+        recyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            adapter = ShopItemAdapter(
+                shopItems = shopItems.toMutableList(),
+                ownedItemIds = ownedItemIds,
+            ) { shopItem ->
+                buyShopItems(shopItem, userId)
+            }
+        }
+    }
+
+    private fun buyShopItems(shopItem: ShopItem, userId: Int) {
+        lifecycleScope.launch {
+            val user = db.userDao().getUserById(userId)
+
+            if (user == null) {
+                Toast.makeText(requireContext(), "Error", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            var userPoints = user.points
+            val itemCost = shopItem.price
+
+            if (userPoints < itemCost) {
+                Toast.makeText(
+                    requireContext(),
+                    "Unable to buy this item",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@launch
+            }
+
+            val userItem = UserItem(
+                userId = userId,
+                itemId = shopItem.id
+            )
+
+            val result = db.userItemDao().insertUserItem(userItem)
+
+            if (result != -1L) {
+
+                userPoints -= itemCost
+
+                val updatedUser = user.copy(points = userPoints)
+                db.userDao().updateUser(updatedUser)
+
+                (binding.rvShopItemsSkins.adapter as? ShopItemAdapter)?.addOwnedItem(shopItem.id)
+
+                Toast.makeText(
+                    requireContext(),
+                    "Item comprado! (-$itemCost pontos)",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    "Já tens este item",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

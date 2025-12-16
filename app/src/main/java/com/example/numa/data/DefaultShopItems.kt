@@ -5,32 +5,131 @@ import com.example.numa.entity.ShopItem
 object DefaultShopItems {
 
     val items = listOf(
+        // --- SKINS ---
         ShopItem(
             id = 1,
             name = "Orange Cat",
-            description = "A orange cat",
+            description = "A friendly orange cat",
             price = 100,
-            image = "orange_cat_banner_1",
+            image = "orange_cat_banner",
             item = "orange_cat_idle_animation",
             type = "skin"
         ),
         ShopItem(
             id = 2,
             name = "White Cat",
-            description = "A white cat",
+            description = "A polite white cat",
             price = 200,
-            image = "white_cat_banner_1",
+            image = "white_cat_banner",
             item = "white_cat_idle_animation",
             type = "skin"
         ),
         ShopItem(
             id = 3,
             name = "Gray Cat",
-            description = "A gray cat",
+            description = "A mysterious gray cat",
             price = 300,
-            image = "white_cat_banner_1",
-            item = "white_cat_idle_animation",
+            image = "gray_cat_banner",
+            item = "gray_cat_idle_animation",
             type = "skin"
         ),
+
+        // --- HEAD ---
+        ShopItem(
+            id = 4,
+            name = "Red Cap",
+            description = "A cool baseball cap",
+            price = 150,
+            image = "red_cap_icon",
+            item = "red_cap_asset",
+            type = "head"
+        ),
+        ShopItem(
+            id = 5,
+            name = "Sunglasses",
+            description = "Deal with it",
+            price = 120,
+            image = "sunglasses_icon",
+            item = "sunglasses_asset",
+            type = "head"
+        ),
+        ShopItem(
+            id = 6,
+            name = "Gold Crown",
+            description = "Fit for a king",
+            price = 500,
+            image = "crown_icon",
+            item = "crown_asset",
+            type = "head"
+        ),
+
+        // --- TORSO ---
+        ShopItem(
+            id = 7,
+            name = "Red Scarf",
+            description = "Keeps you warm",
+            price = 100,
+            image = "red_scarf_icon",
+            item = "red_scarf_asset",
+            type = "torso"
+        ),
+        ShopItem(
+            id = 8,
+            name = "Blue Bow Tie",
+            description = "Very fancy",
+            price = 150,
+            image = "bow_tie_icon",
+            item = "bow_tie_asset",
+            type = "torso"
+        ),
+        ShopItem(
+            id = 9,
+            name = "Green Hoodie",
+            description = "Casual style",
+            price = 250,
+            image = "green_hoodie_icon",
+            item = "green_hoodie_asset",
+            type = "torso"
+        ),
+
+        // --- LEGS ---
+        ShopItem(
+            id = 10,
+            name = "Blue Shorts",
+            description = "Good for running",
+            price = 180,
+            image = "blue_shorts_icon",
+            item = "blue_shorts_asset",
+            type = "legs"
+        ),
+        ShopItem(
+            id = 11,
+            name = "Black Pants",
+            description = "Goes with everything",
+            price = 200,
+            image = "black_pants_icon",
+            item = "black_pants_asset",
+            type = "legs"
+        ),
+
+        // --- FEET ---
+        ShopItem(
+            id = 12,
+            name = "Red Sneakers",
+            description = "Fast shoes",
+            price = 150,
+            image = "red_sneakers_icon",
+            item = "red_sneakers_asset",
+            type = "feet"
+        ),
+        ShopItem(
+            id = 13,
+            name = "Brown Boots",
+            description = "Made for walking",
+            price = 160,
+            image = "brown_boots_icon",
+            item = "brown_boots_asset",
+            type = "feet"
+        )
     )
 }
