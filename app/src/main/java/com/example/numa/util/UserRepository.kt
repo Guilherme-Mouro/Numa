@@ -1,7 +1,6 @@
-package com.example.numa
+package com.example.numa.util
 
 import com.example.numa.dao.UserDao
-import com.example.numa.util.LevelUp
 
 class UserRepository(private val userDao: UserDao) {
 
