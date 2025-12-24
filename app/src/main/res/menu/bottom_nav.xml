@@ -7,6 +7,11 @@
         android:icon="@drawable/ic_home"/>
 
     <item
+        android:id="@+id/shop"
+        android:title="Shop"
+        android:icon="@drawable/ic_store"/>
+
+    <item
         android:id="@+id/habit"
         android:title="Habit"
         android:icon="@drawable/ic_habit"/>
