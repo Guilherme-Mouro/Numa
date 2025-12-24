@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit
 class SleepSegmentAdapter(private val sleepSegments: List<Sleep>) : RecyclerView.Adapter<SleepSegmentAdapter.ViewHolder>() {
 
     private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    private val dateFormat = SimpleDateFormat("dd MMMM", Locale.getDefault())
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemSleepSegmentBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -30,8 +31,10 @@ class SleepSegmentAdapter(private val sleepSegments: List<Sleep>) : RecyclerView
         fun bind(segment: Sleep) {
             val startTimeFormatted = timeFormat.format(Date(segment.startTime))
             val endTimeFormatted = timeFormat.format(Date(segment.endTime))
+            val dateFormatted = dateFormat.format(Date(segment.date))
 
             binding.tvTimeRange.text = "$startTimeFormatted  -  $endTimeFormatted"
+            binding.tvDate.text = dateFormatted
 
             val durationMillis = segment.endTime - segment.startTime
             val hours = TimeUnit.MILLISECONDS.toHours(durationMillis)

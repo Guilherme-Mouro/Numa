@@ -82,8 +82,8 @@ class SleepTrackingService : Service() {
         )
 
         val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setContentTitle("Monitorando o Sono")
-            .setContentText("O Numa está registrando sua noite de sono.")
+            .setContentTitle("A monitorizar Sono")
+            .setContentText("A Numa está a monitorizar a sua noite de sono.")
             .setSmallIcon(R.drawable.ic_stat_name)
             .setContentIntent(pendingIntent)
             .build()

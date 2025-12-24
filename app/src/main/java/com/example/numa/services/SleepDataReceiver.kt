@@ -36,11 +36,6 @@ class SleepDataReceiver : BroadcastReceiver() {
                 return
             }
 
-            val calendar = Calendar.getInstance()
-            calendar.add(Calendar.DAY_OF_YEAR, -1)
-            calendar.set(Calendar.HOUR_OF_DAY, 18)
-            val sinceMillis = calendar.timeInMillis
-
             CoroutineScope(Dispatchers.IO).launch {
                 val database = DatabaseProvider.getDatabase(context)
                 val sleepDao = database.sleepDao()
@@ -52,7 +47,21 @@ class SleepDataReceiver : BroadcastReceiver() {
                     val endTimeFormatted = timeFormat.format(Date(event.endTimeMillis))
                     Log.d("SleepDataReceiver", "> Processando evento: Início=$startTimeFormatted, Fim=$endTimeFormatted, Status=${event.status}")
 
+                    // FILTRO DE RELEVÂNCIA: Apenas guardar eventos que começaram no período de "hoje".
+                    //if (event.startTimeMillis < sinceMillis) {
+                    // Log.w("SleepDataReceiver", "  -> IGNORADO (Evento é de um dia anterior)")
+                    //continue
+                    //}
+
                     if (event.status == SleepSegmentEvent.STATUS_SUCCESSFUL) {
+                        // VERIFICAÇÃO DE DUPLICADOS: Já existe um registo com este startTime e endTime?
+                        val segmentExists = sleepDao.doesSegmentExist(userId, event.startTimeMillis, event.endTimeMillis) > 0
+
+                        if (segmentExists) {
+                            Log.w("SleepDataReceiver", "  -> IGNORADO (Segmento duplicado já existe na base de dados)")
+                            continue
+                        }
+
                         val durationMillis = event.endTimeMillis - event.startTimeMillis
                         val durationMinutes = TimeUnit.MILLISECONDS.toMinutes(durationMillis)
 
@@ -89,7 +98,6 @@ class SleepDataReceiver : BroadcastReceiver() {
 
     private fun calculateScore(durationMinutes: Long): Double {
         val targetMinutes = TimeUnit.HOURS.toMinutes(8) // Objetivo de 8 horas
-        // Calcula o score como uma percentagem do objetivo, limitado a 100%
         val score = (durationMinutes.toDouble() / targetMinutes * 100).coerceAtMost(100.0)
         return score
     }
@@ -104,7 +112,6 @@ class SleepDataReceiver : BroadcastReceiver() {
     }
 
     private fun calculateExperience(durationMinutes: Long): Int {
-        // Mapeia a duração para um valor de XP entre 10 e 30
         val xp = when {
             durationMinutes >= TimeUnit.HOURS.toMinutes(8) -> 30
             durationMinutes >= TimeUnit.HOURS.toMinutes(7) -> 25

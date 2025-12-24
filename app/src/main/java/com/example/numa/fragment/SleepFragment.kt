@@ -20,7 +20,6 @@ import com.example.numa.services.SleepTrackingService
 import com.example.numa.util.DatabaseProvider
 import com.example.numa.util.SessionManager
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 class SleepFragment : Fragment() {
 
@@ -56,7 +55,7 @@ class SleepFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         updateButtonUI()
-        loadTodaysSleepData()
+        loadRecentSleepData()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -66,7 +65,7 @@ class SleepFragment : Fragment() {
         }
     }
 
-    private fun loadTodaysSleepData() {
+    private fun loadRecentSleepData() {
         val sessionManager = SessionManager(requireContext())
         val userId = sessionManager.getUserId()
 
@@ -80,13 +79,8 @@ class SleepFragment : Fragment() {
         lifecycleScope.launch {
             val sleepDao = DatabaseProvider.getDatabase(requireContext()).sleepDao()
 
-            // Define o período de "hoje" (ex: das 18h de ontem até agora)
-            val calendar = Calendar.getInstance()
-            calendar.add(Calendar.DAY_OF_YEAR, -1)
-            calendar.set(Calendar.HOUR_OF_DAY, 18)
-            val sinceMillis = calendar.timeInMillis
-
-            val sleepSegments = sleepDao.getSleepSegmentsSince(userId, sinceMillis)
+            // Utiliza a nova função para ir buscar os últimos 7 registos
+            val sleepSegments = sleepDao.getLatest7SleepSegments(userId)
 
             if (sleepSegments.isNotEmpty()) {
                 binding.rvSleepSegments.adapter = SleepSegmentAdapter(sleepSegments)
@@ -95,7 +89,7 @@ class SleepFragment : Fragment() {
             } else {
                 binding.rvSleepSegments.isVisible = false
                 binding.tvNoData.isVisible = true
-                binding.tvNoData.text = "Nenhum registo de sono para hoje."
+                binding.tvNoData.text = "Nenhum registo de sono encontrado."
             }
         }
     }
