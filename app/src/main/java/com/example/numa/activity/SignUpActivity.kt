@@ -3,6 +3,7 @@ package com.example.numa.activity
 import android.content.Intent
 import android.graphics.drawable.AnimationDrawable
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.numa.R
@@ -27,16 +28,22 @@ class SignUpActivity : AppCompatActivity() {
         val sessionManager = SessionManager(this)
         val userID = sessionManager.getUserId()
 
+        lifecycleScope.launch {
+            db.shopItemDao().deleteAll()
+            DatabaseProvider.addStoreItems(this@SignUpActivity)
+        }
+
         if (userID != null) {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
         }
+
         val characterImageView = binding.imgAnim
 
         characterImageView.setBackgroundResource(R.drawable.cat_banner_animation)
 
-        FixPixelArt(this).removeAnimFilter(characterImageView)
+        FixPixelArt.removeAnimFilter(characterImageView)
 
         val characterAnimation = characterImageView.background as AnimationDrawable
         characterAnimation.start()

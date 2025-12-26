@@ -30,7 +30,7 @@ import com.example.numa.entity.UserItem
         ShopItem::class,
         UserItem::class,
                ],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 
@@ -44,5 +44,6 @@ abstract class DataBase : RoomDatabase() {
     abstract fun achievementUserDao(): AchievementUserDao
     abstract fun shopItemDao(): ShopItemDao
     abstract fun userItemDao(): UserItemDao
+
 
 }

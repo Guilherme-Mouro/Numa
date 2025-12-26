@@ -60,6 +60,9 @@ dependencies {
 
     implementation("com.jakewharton.threetenabp:threetenabp:1.4.4")
 
+    //Material Progress Bar
+    implementation("com.google.android.material:material:1.11.0")
+    
     // Sleep API
     implementation("com.google.android.gms:play-services-location:21.2.0")
 

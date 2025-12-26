@@ -34,16 +34,8 @@ interface HabitDao {
     suspend fun getCompletedHabitsForDate(dayOfWeek: String, specificDate: Long, userId: Int): List<Habit>
 
 
-    @Query("UPDATE habit SET title = :title, description = :description, startTime = :startTime, duration = :duration, experience = :experience, streak = :streak WHERE id = :habitId")
-    suspend fun updateHabit(
-        habitId: Int,
-        title: String,
-        description: String,
-        startTime: Long,
-        duration: Long,
-        experience: Int,
-        streak: Int,
-    )
+    @Update
+    suspend fun updateHabit(habit: Habit)
 
     @Query("UPDATE habit SET state = :state WHERE id = :habitId")
     suspend fun updateHabitState(

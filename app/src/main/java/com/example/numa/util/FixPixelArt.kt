@@ -7,7 +7,7 @@ import android.view.View
 import android.widget.ImageView
 
 class FixPixelArt(context: Context) {
-
+companion object {
     fun removeFilter(image: ImageView) {
         image.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         (image.drawable as BitmapDrawable).paint.isFilterBitmap = false
@@ -29,4 +29,5 @@ class FixPixelArt(context: Context) {
             background.paint.isFilterBitmap = false
         }
     }
+}
 }

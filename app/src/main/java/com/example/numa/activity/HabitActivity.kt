@@ -1,5 +1,6 @@
 package com.example.numa.activity
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -24,7 +25,9 @@ class HabitActivity : AppCompatActivity() {
 
         binding.btnStartHabit.setOnClickListener {
             lifecycleScope.launch {
-                db.habitDao().updateHabitState(habitId, "complete")
+                val intent = Intent(this@HabitActivity, HabitProgressionActivity::class.java)
+                intent.putExtra("habitId",habitId)
+                startActivity(intent)
             }
             finish()
         }
@@ -42,7 +45,7 @@ class HabitActivity : AppCompatActivity() {
                     binding.tvDesc.text = habit.description
                     binding.tvXp.text = habit.experience.toString() + " XP"
                     binding.tvPoints.text =
-                        habit.streak.toString() + if (habit.streak == 1) "Dia" else " Dias"
+                        habit.streak.toString() + if (habit.streak == 1) "Day" else " Days"
                     //binding.numDuration.value = habit.duration.toInt()
                 }
             }

@@ -5,56 +5,174 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.numa.R
+import com.example.numa.UserRepository
+import com.example.numa.adapter.ShopItemAdapter
+import com.example.numa.databinding.FragmentShopBinding
+import com.example.numa.entity.ShopItem
+import com.example.numa.entity.UserItem
+import com.example.numa.util.DatabaseProvider
+import com.example.numa.util.SessionManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.launch
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ShopFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ShopFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private var _binding: FragmentShopBinding? = null
+    private val binding get() = _binding!!
+    private val db by lazy { DatabaseProvider.getDatabase(requireContext()) }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    private lateinit var types: Map<String, RecyclerView>
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentShopBinding.inflate(inflater, container, false)
+
+        val sessionManager = SessionManager(requireContext())
+        val userId = sessionManager.getUserId()
+
+        if (userId == null) {
+            Toast.makeText(requireContext(), "Error: user not found", Toast.LENGTH_SHORT).show()
+            return binding.root
+        }
+
+        types = mapOf(
+            "skin" to binding.rvShopItemsSkins,
+            "head" to binding.rvShopItemsHead,
+            "torso" to binding.rvShopItemsTorso,
+            "legs" to binding.rvShopItemsLegs,
+            "feet" to binding.rvShopItemsFeet,
+            "background" to binding.rvShopItemsBackground
+        )
+
+        loadShopItems(userId)
+
+        return binding.root
+    }
+
+    private fun loadShopItems(userId: Int) {
+        lifecycleScope.launch {
+            val ownedItemIds = db.userItemDao()
+                .getUserItemByUserId(userId)
+                .map { it.itemId }
+                .toSet()
+
+            val pet = db.petDao().getPetByUser(userId)
+
+            types.forEach { (type, recyclerView) ->
+                val shopItems = db.shopItemDao().getShopItemByType(type)
+
+                val currentEquippedValue = when(type) {
+                    "skin" -> pet?.skin; "head" -> pet?.head; "torso" -> pet?.torso
+                    "legs" -> pet?.legs; "feet" -> pet?.feet
+                    else -> null
+                }
+
+                val equippedId = shopItems.find { it.item == currentEquippedValue }?.id
+
+                setupCategoryList(recyclerView, shopItems, userId, ownedItemIds, equippedId)
+            }
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_shop, container, false)
+    private fun setupCategoryList(
+        recyclerView: RecyclerView,
+        shopItems: List<ShopItem>,
+        userId: Int,
+        ownedItemIds: Set<Int>,
+        equippedId: Int?
+    ) {
+        recyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            adapter = ShopItemAdapter(
+                shopItems = shopItems.toMutableList(),
+                ownedItemIds = ownedItemIds,
+                equippedItemId = equippedId
+            ) { shopItem ->
+                showActionDialog(shopItem, userId)
+            }
+        }
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ShopFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ShopFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    private fun showActionDialog(shopItem: ShopItem, userId: Int) {
+        lifecycleScope.launch {
+            val isOwned = db.userItemDao().getUserItemByUserId(userId).any { it.itemId == shopItem.id }
+
+            val dialogView = layoutInflater.inflate(R.layout.item_custom_dialog, null)
+            val imgItem = dialogView.findViewById<ImageView>(R.id.imgDialogItem)
+            val tvName = dialogView.findViewById<TextView>(R.id.tvDialogName)
+            val tvPrice = dialogView.findViewById<TextView>(R.id.tvDialogPrice)
+
+            tvName.text = shopItem.name
+            tvPrice.text = if (isOwned) "Owned" else "${shopItem.price} Points"
+
+            val imageResource = requireContext().resources.getIdentifier(
+                shopItem.image, "drawable", requireContext().packageName
+            )
+            imgItem.setImageResource(imageResource)
+
+            val dialog = MaterialAlertDialogBuilder(requireContext())
+                .setView(dialogView)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton(if (isOwned) "Equip" else "Buy") { _, _ ->
+                    if (isOwned) equipItem(shopItem, userId) else processPurchase(shopItem, userId)
                 }
+                .create()
+
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dialog.show()
+        }
+    }
+
+    private fun equipItem(shopItem: ShopItem, userId: Int) {
+        lifecycleScope.launch {
+            val pet = db.petDao().getPetByUser(userId) ?: return@launch
+
+            when (shopItem.type) {
+                "skin" -> db.petDao().updateSkin(pet.id, shopItem.item)
+                "head" -> db.petDao().updateHead(pet.id, shopItem.item)
+                "torso" -> db.petDao().updateTorso(pet.id, shopItem.item)
+                "legs" -> db.petDao().updateLegs(pet.id, shopItem.item)
+                "feet" -> db.petDao().updateFeet(pet.id, shopItem.item)
             }
+
+            val recyclerView = types[shopItem.type]
+            val adapter = recyclerView?.adapter as? ShopItemAdapter
+            adapter?.updateEquippedItem(shopItem.id)
+
+            Toast.makeText(requireContext(), "${shopItem.name} Equipped!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun processPurchase(shopItem: ShopItem, userId: Int) {
+        lifecycleScope.launch {
+            val user = db.userDao().getUserById(userId) ?: return@launch
+
+            if (user.points >= shopItem.price) {
+                db.userItemDao().insertUserItem(UserItem(userId = userId, itemId = shopItem.id))
+
+                UserRepository(db.userDao()).addXpAndPoints(userId, 0, -shopItem.price)
+
+                val recyclerView = types[shopItem.type]
+                (recyclerView?.adapter as? ShopItemAdapter)?.markItemAsOwned(shopItem.id)
+
+                Toast.makeText(requireContext(), "Bought!", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(requireContext(), "Not enough points!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

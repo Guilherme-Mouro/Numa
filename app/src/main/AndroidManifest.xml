@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -19,34 +20,36 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Numa">
 
-        <!-- Activities -->
         <activity
             android:name=".activity.SignUpActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".activity.MainActivity"
             android:exported="false"/>
+
         <activity
             android:name=".activity.HabitActivity"
             android:exported="false"/>
 
-        <!-- Service -->
+        <activity
+            android:name=".activity.HabitProgressionActivity"
+            android:exported="false" />
+
         <service
             android:name=".services.SleepTrackingService"
             android:foregroundServiceType="health"
             android:exported="false" />
 
-        <!-- Receiver -->
+        <receiver android:name=".util.AlarmReceiver" android:exported="false" />
         <receiver
             android:name=".services.SleepDataReceiver"
             android:exported="false" />
 
     </application>
-
 </manifest>

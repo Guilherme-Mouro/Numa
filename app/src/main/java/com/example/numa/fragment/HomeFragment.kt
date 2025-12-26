@@ -1,9 +1,7 @@
 package com.example.numa.fragment
 
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.graphics.drawable.AnimationDrawable
-import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -11,15 +9,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.room.Room
-import com.example.numa.DataBase
 import com.example.numa.activity.HabitActivity
-import com.example.numa.R
 import com.example.numa.adapter.HabitAdapter
 import com.example.numa.databinding.FragmentHomeBinding
 import com.example.numa.util.DatabaseProvider
 import com.example.numa.util.FixPixelArt
 import com.example.numa.util.SessionManager
+import com.jakewharton.threetenabp.AndroidThreeTen // <--- IMPORTAÇÃO IMPORTANTE
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDate
 import org.threeten.bp.ZoneId
@@ -36,11 +32,17 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
+        // This prevents the 'ZoneRulesException' crash when using LocalDate
+        AndroidThreeTen.init(requireContext())
+        // --------------------------------------------------
+
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
         // Creating the sessionManager variable to be able to check the user Id later
         val sessionManager = SessionManager(requireContext())
         val userId = sessionManager.getUserId()
+        // --------------------------------------------------
 
         loadPet(userId)
         loadHabits(userId)
@@ -53,14 +55,20 @@ class HomeFragment : Fragment() {
             userId?.let {
                 val pet = db.petDao().getPetByUser(userId)
 
-                //Pet skin
-                val petSprite = binding.imgPet
-                val petSkin = resources.getIdentifier(pet?.skin, "drawable", requireContext().packageName)
-                petSprite.setBackgroundResource(petSkin)
-                FixPixelArt(requireContext()).removeAnimFilter(petSprite)
+                if (pet != null) {
+                    val petSprite = binding.imgPet
+                    val petSkin = resources.getIdentifier(pet.skin, "drawable", requireContext().packageName)
 
-                val petAnim = petSprite.background as AnimationDrawable
-                petAnim.start()
+                    if (petSkin != 0) {
+                        petSprite.setBackgroundResource(petSkin)
+                        FixPixelArt.removeAnimFilter(petSprite)
+
+                        val background = petSprite.background
+                        if (background is AnimationDrawable) {
+                            background.start()
+                        }
+                    }
+                }
             }
         }
     }
@@ -85,6 +93,8 @@ class HomeFragment : Fragment() {
                 titleCompleted.visibility = View.GONE
                 binding.tvInfo.visibility = View.VISIBLE
                 return@launch
+            } else {
+                binding.tvInfo.visibility = View.GONE
             }
 
             if (habitsForDate.isEmpty()) {
@@ -108,11 +118,14 @@ class HomeFragment : Fragment() {
                 binding.rvCompletedHabits.apply {
                     layoutManager = LinearLayoutManager(requireContext())
                     adapter = HabitAdapter(habitsCompleted.toMutableList()) { habit ->
-
                     }
                 }
             }
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }

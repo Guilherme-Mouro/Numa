@@ -66,7 +66,6 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             userId?.let {
                 val user = database.userDao().getUserById(userId)
-
                 user?.let {
                     binding.tvUserName.text = it.name
                     binding.tvUserLevel.text = it.level.toString()
@@ -84,13 +83,11 @@ class MainActivity : AppCompatActivity() {
         val transaction = supportFragmentManager.beginTransaction()
 
         if (newIndex > lastIndex) {
-            // Indo para a direita → entra da direita, sai para a esquerda
             transaction.setCustomAnimations(
                 R.anim.slide_in_right,
                 R.anim.slide_out_left
             )
         } else if (newIndex < lastIndex) {
-            // Indo para a esquerda → entra da esquerda, sai para a direita
             transaction.setCustomAnimations(
                 R.anim.slide_in_left,
                 R.anim.slide_out_right
