@@ -15,10 +15,11 @@ import com.google.android.material.card.MaterialCardView
 class ShopItemAdapter(
     val shopItems: MutableList<ShopItem>,
     private var ownedItemIds: Set<Int>,
+    private var equippedItemId: Int? = null,
     private val onShopItemClick: (ShopItem) -> Unit
 ) : RecyclerView.Adapter<ShopItemAdapter.ShopItemViewHolder>() {
 
-    class ShopItemViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+    class ShopItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val name: TextView = itemView.findViewById(R.id.tvName)
         val price: TextView = itemView.findViewById(R.id.tvPrice)
         val img: ImageView = itemView.findViewById(R.id.imgItem)
@@ -33,18 +34,24 @@ class ShopItemAdapter(
 
     override fun onBindViewHolder(holder: ShopItemViewHolder, position: Int) {
         val item = shopItems[position]
+        val context = holder.itemView.context
 
         holder.name.text = item.name
-        holder.price.text = item.price.toInt().toString()
+        holder.price.text = item.price.toString()
 
-        holder.img.setImageResource(R.drawable.cat_banner_1)
+        val imageResource = context.resources.getIdentifier(
+            item.image,
+            "drawable",
+            context.packageName
+        )
+        holder.img.setImageResource(imageResource)
+
         FixPixelArt.removeFilter(holder.img)
 
-        val context = holder.itemView.context
-        val strokeColorRes = if (ownedItemIds.contains(item.id)) {
-            R.color.yellow
-        } else {
-            R.color.white
+        val strokeColorRes = when {
+            item.id == equippedItemId -> R.color.green
+            ownedItemIds.contains(item.id) -> R.color.yellow
+            else -> R.color.white
         }
 
         holder.card.strokeColor = ContextCompat.getColor(context, strokeColorRes)
@@ -56,8 +63,26 @@ class ShopItemAdapter(
 
     override fun getItemCount() = shopItems.size
 
-    fun addOwnedItem(itemId: Int) {
-        ownedItemIds = ownedItemIds + itemId
-        notifyDataSetChanged()
+
+    fun markItemAsOwned(itemId: Int) {
+        val position = shopItems.indexOfFirst { it.id == itemId }
+        if (position != -1) {
+            ownedItemIds = ownedItemIds + itemId
+            notifyItemChanged(position)
+        }
+    }
+
+    fun updateEquippedItem(newEquippedId: Int) {
+        val oldEquippedId = equippedItemId
+
+        equippedItemId = newEquippedId
+
+        if (oldEquippedId != null) {
+            val oldPosition = shopItems.indexOfFirst { it.id == oldEquippedId }
+            if (oldPosition != -1) notifyItemChanged(oldPosition)
+        }
+
+        val newPosition = shopItems.indexOfFirst { it.id == newEquippedId }
+        if (newPosition != -1) notifyItemChanged(newPosition)
     }
 }

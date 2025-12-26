@@ -15,6 +15,18 @@ interface PetDao {
     @Query("UPDATE pet SET humor = :humor WHERE id = :petId")
     suspend fun updateHumor(petId: Int, humor: String)
 
+    @Query("UPDATE pet SET skin = :skin WHERE id = :petId")
+    suspend fun updateSkin(petId: Int, skin: String)
+
+    @Query("UPDATE pet SET head = :head WHERE id = :petId")
+    suspend fun updateHead(petId: Int, head: String)
+    @Query("UPDATE pet SET torso = :torso WHERE id = :petId")
+    suspend fun updateTorso(petId: Int, torso: String)
+    @Query("UPDATE pet SET legs = :legs WHERE id = :petId")
+    suspend fun updateLegs(petId: Int, legs: String)
+    @Query("UPDATE pet SET feet = :feet WHERE id = :petId")
+    suspend fun updateFeet(petId: Int, feet: String)
+
     @Insert
     suspend fun insertPet(pet: Pet): Long
 

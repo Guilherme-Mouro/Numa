@@ -11,7 +11,7 @@ object DefaultShopItems {
             name = "Orange Cat",
             description = "A friendly orange cat",
             price = 100,
-            image = "orange_cat_banner",
+            image = "orange_cat_banner_1",
             item = "orange_cat_idle_animation",
             type = "skin"
         ),
@@ -20,7 +20,7 @@ object DefaultShopItems {
             name = "White Cat",
             description = "A polite white cat",
             price = 200,
-            image = "white_cat_banner",
+            image = "white_cat_banner_1",
             item = "white_cat_idle_animation",
             type = "skin"
         ),
@@ -29,7 +29,7 @@ object DefaultShopItems {
             name = "Gray Cat",
             description = "A mysterious gray cat",
             price = 300,
-            image = "gray_cat_banner",
+            image = "gray_cat_banner_1",
             item = "gray_cat_idle_animation",
             type = "skin"
         ),
@@ -40,7 +40,7 @@ object DefaultShopItems {
             name = "Red Cap",
             description = "A cool baseball cap",
             price = 150,
-            image = "red_cap_icon",
+            image = "orange_cat_banner_1",
             item = "red_cap_asset",
             type = "head"
         ),
@@ -49,7 +49,7 @@ object DefaultShopItems {
             name = "Sunglasses",
             description = "Deal with it",
             price = 120,
-            image = "sunglasses_icon",
+            image = "orange_cat_banner_1",
             item = "sunglasses_asset",
             type = "head"
         ),
@@ -58,7 +58,7 @@ object DefaultShopItems {
             name = "Gold Crown",
             description = "Fit for a king",
             price = 500,
-            image = "crown_icon",
+            image = "orange_cat_banner_1",
             item = "crown_asset",
             type = "head"
         ),
@@ -69,7 +69,7 @@ object DefaultShopItems {
             name = "Red Scarf",
             description = "Keeps you warm",
             price = 100,
-            image = "red_scarf_icon",
+            image = "orange_cat_banner_1",
             item = "red_scarf_asset",
             type = "torso"
         ),
@@ -78,7 +78,7 @@ object DefaultShopItems {
             name = "Blue Bow Tie",
             description = "Very fancy",
             price = 150,
-            image = "bow_tie_icon",
+            image = "orange_cat_banner_1",
             item = "bow_tie_asset",
             type = "torso"
         ),
@@ -87,7 +87,7 @@ object DefaultShopItems {
             name = "Green Hoodie",
             description = "Casual style",
             price = 250,
-            image = "green_hoodie_icon",
+            image = "orange_cat_banner_1",
             item = "green_hoodie_asset",
             type = "torso"
         ),
@@ -98,7 +98,7 @@ object DefaultShopItems {
             name = "Blue Shorts",
             description = "Good for running",
             price = 180,
-            image = "blue_shorts_icon",
+            image = "orange_cat_banner_1",
             item = "blue_shorts_asset",
             type = "legs"
         ),
@@ -107,7 +107,7 @@ object DefaultShopItems {
             name = "Black Pants",
             description = "Goes with everything",
             price = 200,
-            image = "black_pants_icon",
+            image = "orange_cat_banner_1",
             item = "black_pants_asset",
             type = "legs"
         ),
@@ -118,7 +118,7 @@ object DefaultShopItems {
             name = "Red Sneakers",
             description = "Fast shoes",
             price = 150,
-            image = "red_sneakers_icon",
+            image = "orange_cat_banner_1",
             item = "red_sneakers_asset",
             type = "feet"
         ),
@@ -127,7 +127,7 @@ object DefaultShopItems {
             name = "Brown Boots",
             description = "Made for walking",
             price = 160,
-            image = "brown_boots_icon",
+            image = "orange_cat_banner_1",
             item = "brown_boots_asset",
             type = "feet"
         )

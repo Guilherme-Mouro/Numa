@@ -18,10 +18,9 @@
 
         <ImageView
             android:id="@+id/imgPet"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="40"
-            android:scaleType="fitXY"
+            android:scaleType="centerInside"
             android:layout_gravity="center"/>
         
     </LinearLayout>

@@ -5,22 +5,29 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.numa.R
+import com.example.numa.UserRepository
 import com.example.numa.adapter.ShopItemAdapter
 import com.example.numa.databinding.FragmentShopBinding
 import com.example.numa.entity.ShopItem
 import com.example.numa.entity.UserItem
 import com.example.numa.util.DatabaseProvider
 import com.example.numa.util.SessionManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 
 class ShopFragment : Fragment() {
     private var _binding: FragmentShopBinding? = null
     private val binding get() = _binding!!
     private val db by lazy { DatabaseProvider.getDatabase(requireContext()) }
+
+    private lateinit var types: Map<String, RecyclerView>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,11 +40,11 @@ class ShopFragment : Fragment() {
         val userId = sessionManager.getUserId()
 
         if (userId == null) {
-            Toast.makeText(requireContext(), "Erro: utilizador não encontrado", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Error: user not found", Toast.LENGTH_SHORT).show()
             return binding.root
         }
 
-        val types = mapOf(
+        types = mapOf(
             "skin" to binding.rvShopItemsSkins,
             "head" to binding.rvShopItemsHead,
             "torso" to binding.rvShopItemsTorso,
@@ -46,90 +53,120 @@ class ShopFragment : Fragment() {
             "background" to binding.rvShopItemsBackground
         )
 
-        lifecycleScope.launch {
+        loadShopItems(userId)
 
+        return binding.root
+    }
+
+    private fun loadShopItems(userId: Int) {
+        lifecycleScope.launch {
             val ownedItemIds = db.userItemDao()
                 .getUserItemByUserId(userId)
                 .map { it.itemId }
                 .toSet()
 
+            val pet = db.petDao().getPetByUser(userId)
+
             types.forEach { (type, recyclerView) ->
-                setupCategoryList(type, recyclerView, userId, ownedItemIds)
+                val shopItems = db.shopItemDao().getShopItemByType(type)
+
+                val currentEquippedValue = when(type) {
+                    "skin" -> pet?.skin; "head" -> pet?.head; "torso" -> pet?.torso
+                    "legs" -> pet?.legs; "feet" -> pet?.feet
+                    else -> null
+                }
+
+                val equippedId = shopItems.find { it.item == currentEquippedValue }?.id
+
+                setupCategoryList(recyclerView, shopItems, userId, ownedItemIds, equippedId)
             }
-
         }
-
-        return binding.root
     }
 
-    private suspend fun setupCategoryList(
-        type: String,
+    private fun setupCategoryList(
         recyclerView: RecyclerView,
+        shopItems: List<ShopItem>,
         userId: Int,
-        ownedItemIds: Set<Int>
+        ownedItemIds: Set<Int>,
+        equippedId: Int?
     ) {
-        val shopItems = db.shopItemDao().getShopItemByType(type)
-
         recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = ShopItemAdapter(
                 shopItems = shopItems.toMutableList(),
                 ownedItemIds = ownedItemIds,
+                equippedItemId = equippedId
             ) { shopItem ->
-                buyShopItems(shopItem, userId)
+                showActionDialog(shopItem, userId)
             }
         }
     }
 
-    private fun buyShopItems(shopItem: ShopItem, userId: Int) {
+    private fun showActionDialog(shopItem: ShopItem, userId: Int) {
         lifecycleScope.launch {
-            val user = db.userDao().getUserById(userId)
+            val isOwned = db.userItemDao().getUserItemByUserId(userId).any { it.itemId == shopItem.id }
 
-            if (user == null) {
-                Toast.makeText(requireContext(), "Error", Toast.LENGTH_SHORT).show()
-                return@launch
-            }
+            val dialogView = layoutInflater.inflate(R.layout.item_custom_dialog, null)
+            val imgItem = dialogView.findViewById<ImageView>(R.id.imgDialogItem)
+            val tvName = dialogView.findViewById<TextView>(R.id.tvDialogName)
+            val tvPrice = dialogView.findViewById<TextView>(R.id.tvDialogPrice)
 
-            var userPoints = user.points
-            val itemCost = shopItem.price
+            tvName.text = shopItem.name
+            tvPrice.text = if (isOwned) "Owned" else "${shopItem.price} Points"
 
-            if (userPoints < itemCost) {
-                Toast.makeText(
-                    requireContext(),
-                    "Unable to buy this item",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@launch
-            }
-
-            val userItem = UserItem(
-                userId = userId,
-                itemId = shopItem.id
+            val imageResource = requireContext().resources.getIdentifier(
+                shopItem.image, "drawable", requireContext().packageName
             )
+            imgItem.setImageResource(imageResource)
 
-            val result = db.userItemDao().insertUserItem(userItem)
+            val dialog = MaterialAlertDialogBuilder(requireContext())
+                .setView(dialogView)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton(if (isOwned) "Equip" else "Buy") { _, _ ->
+                    if (isOwned) equipItem(shopItem, userId) else processPurchase(shopItem, userId)
+                }
+                .create()
 
-            if (result != -1L) {
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dialog.show()
+        }
+    }
 
-                userPoints -= itemCost
+    private fun equipItem(shopItem: ShopItem, userId: Int) {
+        lifecycleScope.launch {
+            val pet = db.petDao().getPetByUser(userId) ?: return@launch
 
-                val updatedUser = user.copy(points = userPoints)
-                db.userDao().updateUser(updatedUser)
+            when (shopItem.type) {
+                "skin" -> db.petDao().updateSkin(pet.id, shopItem.item)
+                "head" -> db.petDao().updateHead(pet.id, shopItem.item)
+                "torso" -> db.petDao().updateTorso(pet.id, shopItem.item)
+                "legs" -> db.petDao().updateLegs(pet.id, shopItem.item)
+                "feet" -> db.petDao().updateFeet(pet.id, shopItem.item)
+            }
 
-                (binding.rvShopItemsSkins.adapter as? ShopItemAdapter)?.addOwnedItem(shopItem.id)
+            val recyclerView = types[shopItem.type]
+            val adapter = recyclerView?.adapter as? ShopItemAdapter
+            adapter?.updateEquippedItem(shopItem.id)
 
-                Toast.makeText(
-                    requireContext(),
-                    "Item comprado! (-$itemCost pontos)",
-                    Toast.LENGTH_SHORT
-                ).show()
+            Toast.makeText(requireContext(), "${shopItem.name} Equipped!", Toast.LENGTH_SHORT).show()
+        }
+    }
 
+    private fun processPurchase(shopItem: ShopItem, userId: Int) {
+        lifecycleScope.launch {
+            val user = db.userDao().getUserById(userId) ?: return@launch
+
+            if (user.points >= shopItem.price) {
+                db.userItemDao().insertUserItem(UserItem(userId = userId, itemId = shopItem.id))
+
+                UserRepository(db.userDao()).addXpAndPoints(userId, 0, -shopItem.price)
+
+                val recyclerView = types[shopItem.type]
+                (recyclerView?.adapter as? ShopItemAdapter)?.markItemAsOwned(shopItem.id)
+
+                Toast.makeText(requireContext(), "Bought!", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(
-                    requireContext(),
-                    "Já tens este item",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Not enough points!", Toast.LENGTH_SHORT).show()
             }
         }
     }
