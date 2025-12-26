@@ -5,6 +5,7 @@ import com.example.numa.dao.AchievementUserDao
 import com.example.numa.dao.UserDao
 import com.example.numa.dao.HabitDao
 import com.example.numa.entity.AchievementUser
+import com.example.numa.util.UserRepository
 
 class CheckAchievementRepository(
     private val achievementDao: AchievementDao,
@@ -13,7 +14,7 @@ class CheckAchievementRepository(
     private val habitDao: HabitDao
 ) {
 
-    // ✅ 1. Inicializa o teu UserRepository aqui usando o userDao existente
+    // 1. Inicializa o UserRepository aqui usando o userDao existente
     private val userRepository = UserRepository(userDao)
 
     suspend fun checkAndUnlockAchievement(userId: Int, type: String, level: Int) {
@@ -33,7 +34,7 @@ class CheckAchievementRepository(
                 )
             )
 
-            // ✅ 2. Usa a função do UserRepository para dar XP e Pontos
+            //  Usa a função do UserRepository para dar XP e Pontos
             userRepository.addXpAndPoints(
                 userId = userId,
                 xpEarned = achievement.experience,

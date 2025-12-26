@@ -3,9 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
 
     <application
-        android:allowBackup="true"
+        android:name=".NumaApplication"
+        android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -14,25 +20,36 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Numa">
 
-        <receiver android:name=".util.AlarmReceiver" />
-        <activity
-            android:name=".activity.HabitProgressionActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activity.HabitActivity"
-            android:exported="false" />
         <activity
             android:name=".activity.SignUpActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".activity.MainActivity"
-            android:exported="false" />
-    </application>
+            android:exported="false"/>
 
+        <activity
+            android:name=".activity.HabitActivity"
+            android:exported="false"/>
+
+        <activity
+            android:name=".activity.HabitProgressionActivity"
+            android:exported="false" />
+
+        <service
+            android:name=".services.SleepTrackingService"
+            android:foregroundServiceType="health"
+            android:exported="false" />
+
+        <receiver android:name=".util.AlarmReceiver" android:exported="false" />
+        <receiver
+            android:name=".services.SleepDataReceiver"
+            android:exported="false" />
+
+    </application>
 </manifest>
