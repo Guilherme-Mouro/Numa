@@ -31,4 +31,6 @@ data class Habit (
 
     val type: String,
 
+    val lastCompletedDate: Long = 0
+
 )

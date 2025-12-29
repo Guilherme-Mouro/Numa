@@ -11,5 +11,6 @@ data class User(
     val level: Int,
     val streak: Int,
     val points: Int,
-    val experience: Int = 0
+    val experience: Int = 0,
+    val lastActiveDate: Long = 0
     )

@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -19,8 +18,9 @@ import com.example.numa.adapter.ProgressQuestAdapter
 import com.example.numa.adapter.Quest
 import com.example.numa.databinding.FragmentQuestBinding
 import com.example.numa.entity.Achievement
+import com.example.numa.CheckAchievementRepository
 import com.example.numa.util.DatabaseProvider
-import com.example.numa.util.LevelUp // ✅ Importante: Importar a utilitária de Level
+import com.example.numa.util.LevelUp
 import com.example.numa.util.SessionManager
 import kotlinx.coroutines.launch
 
@@ -31,6 +31,7 @@ class QuestFragment : Fragment() {
 
     private lateinit var progressAdapter: ProgressQuestAdapter
     private lateinit var achievementAdapter: AchievementAdapter
+    private lateinit var checkAchievementRepository: CheckAchievementRepository
 
     private val sessionManager by lazy { SessionManager(requireContext()) }
     private val database by lazy { DatabaseProvider.getDatabase(requireContext()) }
@@ -47,6 +48,22 @@ class QuestFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Inicializar o repositório ANTES de usar
+        checkAchievementRepository = CheckAchievementRepository(
+            database.achievementDao(),
+            database.achievementUserDao(),
+            database.userDao(),
+            database.habitDao()
+        )
+
+        // Verificar achievements (movido para DEPOIS da inicialização)
+        val userId = sessionManager.getUserId()
+        lifecycleScope.launch {
+            if (userId != null) {
+                checkAchievementRepository.checkAllAchievements(userId)
+            }
+        }
+
         // 1. Configurar componentes da UI
         setupSpinner()
         setupProgressQuestRecyclerView()
@@ -55,11 +72,10 @@ class QuestFragment : Fragment() {
         // 2. Carregar dados
         loadAchievements()
 
-        // ✅ 3. Carregar Estatísticas do User (Level e XP)
+        // 3. Carregar Estatísticas do User (Level e XP)
         loadUserStats()
     }
 
-    // ✅ NOVA FUNÇÃO: Atualiza o texto do nível e XP
     private fun loadUserStats() {
         lifecycleScope.launch {
             val userId = sessionManager.getUserId()
@@ -73,7 +89,7 @@ class QuestFragment : Fragment() {
                     // Atualiza Level
                     binding.tvUserLevel.text = "Lvl ${user.level}"
 
-                    // ✅ Atualiza Pontos (NOVO)
+                    // Atualiza Pontos
                     binding.tvUserPoints.text = "${user.points} Pts"
 
                     // Atualiza XP
@@ -84,11 +100,7 @@ class QuestFragment : Fragment() {
     }
 
     private fun setupSpinner() {
-        // ✅ Correção: Acede através do ID do include
-        // Se o teu ficheiro spinner.xml tem um Spinner com id "spinner":
         val spinner = binding.includeSpinner.spinner
-
-        // (Se der erro no .spinner, verifica se o ID dentro de spinner.xml é mesmo "spinner")
 
         val items = arrayOf("See All", "Desbloqueados", "Bloqueados")
 

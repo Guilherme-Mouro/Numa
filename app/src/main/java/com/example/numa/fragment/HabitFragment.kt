@@ -79,20 +79,68 @@ class HabitFragment : Fragment() {
         return binding.root
     }
 
+    private fun loadHabitsForDate(date: LocalDate, userId: Int?) {
+        lifecycleScope.launch {
+            userId?.let {
+                val dayOfWeek = date.dayOfWeek.name
+                val specificDate = date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+
+                // ✅ Calcular o início do dia selecionado (00:00:00)
+                val todayStart = date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
+
+                val habits = db.habitDao().getHabitsForDate(
+                    dayOfWeek = dayOfWeek,
+                    specificDate = specificDate,
+                    userId = userId,
+                    todayStart = todayStart // ✅ Passa o timestamp
+                )
+
+                if (habits.isEmpty()) {
+                    binding.tvInfoHabits.visibility = View.VISIBLE
+                } else {
+                    binding.tvInfoHabits.visibility = View.INVISIBLE
+                }
+
+                habitsAdapter = HabitAdapter(
+                    habits.toMutableList(),
+                    { habit ->
+                        val intent = Intent(requireContext(), HabitActivity::class.java)
+                        intent.putExtra("habitId", habit.id)
+                        startActivity(intent)
+                    },
+                    selectedDay // ✅ Passa o dia selecionado
+                )
+                binding.rvHabits.adapter = habitsAdapter
+            }
+        }
+    }
+
+
+
     private fun loadHabitsProgress(userId: Int?) {
         lifecycleScope.launch {
-
             val today = LocalDate.now().dayOfWeek.name
 
+            // ✅ Calcular o início de hoje
+            val todayStart = LocalDate.now()
+                .atStartOfDay(ZoneId.systemDefault())
+                .toEpochSecond() * 1000
+
             userId?.let {
-                val habits = db.habitDao().getHabitsForDate(today, 1, userId)
+                val habits = db.habitDao().getHabitsForDate(
+                    today,
+                    1,
+                    userId,
+                    todayStart // ✅ Passa o timestamp
+                )
 
                 if (habits.isNotEmpty()) {
                     val totalHabits = habits.size
                     var totalCompletedHabits = 0
 
                     for (habit in habits) {
-                        if (habit.state == "complete") {
+                        // ✅ Verifica se foi completado hoje
+                        if (habit.lastCompletedDate >= todayStart) {
                             totalCompletedHabits++
                         }
                     }
@@ -108,7 +156,6 @@ class HabitFragment : Fragment() {
                     val yellow = ContextCompat.getColor(requireContext(), R.color.yellow)
                     val yellowBar =
                         ContextCompat.getDrawable(requireContext(), R.drawable.bg_progress_bar)
-
 
                     if (habitsProgress == 100) {
                         binding.tvPercentage.setTextColor(green)
@@ -127,36 +174,6 @@ class HabitFragment : Fragment() {
                 } else {
                     binding.layoutProgress.visibility = View.GONE
                 }
-            }
-        }
-    }
-
-    private fun loadHabitsForDate(date: LocalDate, userId: Int?) {
-        lifecycleScope.launch {
-
-            userId?.let {
-                val dayOfWeek = date.dayOfWeek.name
-                val specificDate =
-                    date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
-
-                val habits = db.habitDao().getHabitsForDate(
-                    dayOfWeek = dayOfWeek,
-                    specificDate = specificDate,
-                    userId = userId
-                )
-
-                if (habits.isEmpty()) {
-                    binding.tvInfoHabits.visibility = View.VISIBLE
-                } else {
-                    binding.tvInfoHabits.visibility = View.INVISIBLE
-                }
-
-                habitsAdapter = HabitAdapter(habits.toMutableList()) { habit ->
-                    val intent = Intent(requireContext(), HabitActivity::class.java)
-                    intent.putExtra("habitId" ,habit.id)
-                    startActivity(intent)
-                }
-                binding.rvHabits.adapter = habitsAdapter
             }
         }
     }

@@ -2,7 +2,6 @@ package com.example.numa.dao
 
 import androidx.room.*
 import com.example.numa.entity.Habit
-import java.time.DayOfWeek
 
 @Dao
 interface HabitDao {
@@ -13,26 +12,39 @@ interface HabitDao {
     @Query("SELECT * FROM habit WHERE id = :habitId")
     suspend fun getHabitById(habitId: Int): Habit?
 
+    // ✅ Query atualizada: Verifica se o hábito NÃO foi completado HOJE
     @Query("""
     SELECT * FROM habit 
-    WHERE userId = :userId AND state == "incomplete" AND (
-        (isRecurring = 1 AND dayOfWeek = :dayOfWeek)
+    WHERE userId = :userId AND (
+        (isRecurring = 1 AND (dayOfWeek = :dayOfWeek OR dayOfWeek = 'EVERYDAY') 
+         AND (lastCompletedDate < :todayStart OR lastCompletedDate = 0))
         OR
-        (isRecurring = 0 AND specificDate = :specificDate)
+        (isRecurring = 0 AND specificDate = :specificDate AND state = 'incomplete')
     )
 """)
-    suspend fun getHabitsForDate(dayOfWeek: String, specificDate: Long, userId: Int): List<Habit>
+    suspend fun getHabitsForDate(
+        dayOfWeek: String,
+        specificDate: Long,
+        userId: Int,
+        todayStart: Long // Timestamp do início do dia (00:00:00)
+    ): List<Habit>
 
+    // ✅ Query para hábitos completados HOJE
     @Query("""
     SELECT * FROM habit 
-    WHERE userId = :userId AND state == "complete" AND (
-        (isRecurring = 1 AND dayOfWeek = :dayOfWeek)
+    WHERE userId = :userId AND (
+        (isRecurring = 1 AND (dayOfWeek = :dayOfWeek OR dayOfWeek = 'EVERYDAY')
+         AND lastCompletedDate >= :todayStart)
         OR
-        (isRecurring = 0 AND specificDate = :specificDate)
+        (isRecurring = 0 AND specificDate = :specificDate AND state = 'complete')
     )
 """)
-    suspend fun getCompletedHabitsForDate(dayOfWeek: String, specificDate: Long, userId: Int): List<Habit>
-
+    suspend fun getCompletedHabitsForDate(
+        dayOfWeek: String,
+        specificDate: Long,
+        userId: Int,
+        todayStart: Long
+    ): List<Habit>
 
     @Update
     suspend fun updateHabit(habit: Habit)

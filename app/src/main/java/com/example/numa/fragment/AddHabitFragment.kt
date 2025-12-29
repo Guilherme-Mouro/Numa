@@ -8,9 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
 import com.example.numa.CheckAchievementRepository
-import com.example.numa.DataBase
 import com.example.numa.databinding.FragmentAddHabitBinding
 import com.example.numa.entity.Habit
 import com.example.numa.util.DatabaseProvider
@@ -44,7 +42,17 @@ class AddHabitFragment : BottomSheetDialogFragment() {
             db.habitDao()
         )
 
-        val weekList = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+        // ✅ Adicionar "Everyday" como primeira opção
+        val weekList = listOf(
+            "Everyday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+        )
 
         val arrayAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, weekList)
         arrayAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
@@ -80,7 +88,7 @@ class AddHabitFragment : BottomSheetDialogFragment() {
 
         binding.btnSaveHabit.setOnClickListener {
             val sessionManager = SessionManager(requireContext())
-            val userId = sessionManager.getUserId() // userId é Int?
+            val userId = sessionManager.getUserId()
 
             userId?.let { nonNullUserId ->
                 val title = binding.edTitle.text.toString().trim()
@@ -91,7 +99,13 @@ class AddHabitFragment : BottomSheetDialogFragment() {
                 var specificDate: Long? = null
 
                 if (recurring) {
-                    dayOfWeek = binding.spDayWeek.selectedItem.toString().uppercase()
+                    val selectedDay = binding.spDayWeek.selectedItem.toString()
+                    // ✅ Se for "Everyday", salva como "EVERYDAY"
+                    dayOfWeek = if (selectedDay == "Everyday") {
+                        "EVERYDAY"
+                    } else {
+                        selectedDay.uppercase()
+                    }
                 } else {
                     val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                     specificDate = format.parse(binding.btnSelectDate.text.toString())?.time ?: 0L
@@ -128,8 +142,8 @@ class AddHabitFragment : BottomSheetDialogFragment() {
                         }
                     }
                 }
-            } // Fim do userId?.let
-        } // Fim do setOnClickListener
+            }
+        }
 
         return binding.root
     }
