@@ -63,7 +63,7 @@ class HabitProgressionActivity : AppCompatActivity() {
 
                 userRepository.addXpAndPoints(
                     userId = habit.userId,
-                    xpEarned = 20,
+                    xpEarned = 10,
                     pointsEarned = 25
                 )
 

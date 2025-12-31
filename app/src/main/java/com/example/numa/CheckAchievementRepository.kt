@@ -61,6 +61,7 @@ class CheckAchievementRepository(
         if (habitId != null) {
             val habit = habitDao.getHabitById(habitId)
             when (habit?.streak) {
+                2 -> checkAndUnlockAchievement(userId, "HABIT_STREAK", 2)
                 7 -> checkAndUnlockAchievement(userId, "HABIT_STREAK", 7)
                 30 -> checkAndUnlockAchievement(userId, "HABIT_STREAK", 30)
                 60 -> checkAndUnlockAchievement(userId, "HABIT_STREAK", 60)
