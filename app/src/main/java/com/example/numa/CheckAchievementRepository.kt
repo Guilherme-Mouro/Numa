@@ -14,7 +14,7 @@ class CheckAchievementRepository(
     private val habitDao: HabitDao
 ) {
 
-    // 1. Inicializa o UserRepository aqui usando o userDao existente
+    // Inicializa o UserRepository aqui usando o userDao existente
     private val userRepository = UserRepository(userDao)
 
     suspend fun checkAndUnlockAchievement(userId: Int, type: String, level: Int) {
@@ -34,7 +34,7 @@ class CheckAchievementRepository(
                 )
             )
 
-            //  Usa a função do UserRepository para dar XP e Pontos
+            // Usa a função do UserRepository para dar XP e Pontos
             userRepository.addXpAndPoints(
                 userId = userId,
                 xpEarned = achievement.experience,
@@ -43,48 +43,42 @@ class CheckAchievementRepository(
         }
     }
 
-    // O resto da função mantém-se exatamente igual
     suspend fun checkAllAchievements(userId: Int, habitId: Int? = null) {
         val user = userDao.getUserById(userId) ?: return
         val habits = habitDao.getHabitsByUser(userId)
 
         // DAILY STREAK
-        when (user.streak) {
-            1 -> checkAndUnlockAchievement(userId, "DAILY_STREAK", 1)
-            7 -> checkAndUnlockAchievement(userId, "DAILY_STREAK", 7)
-            30 -> checkAndUnlockAchievement(userId, "DAILY_STREAK", 30)
-            90 -> checkAndUnlockAchievement(userId, "DAILY_STREAK", 90)
-            365 -> checkAndUnlockAchievement(userId, "DAILY_STREAK", 365)
-        }
+        if (user.streak >= 1) checkAndUnlockAchievement(userId, "DAILY_STREAK", 1)
+        if (user.streak >= 7) checkAndUnlockAchievement(userId, "DAILY_STREAK", 7)
+        if (user.streak >= 30) checkAndUnlockAchievement(userId, "DAILY_STREAK", 30)
+        if (user.streak >= 90) checkAndUnlockAchievement(userId, "DAILY_STREAK", 90)
+        if (user.streak >= 365) checkAndUnlockAchievement(userId, "DAILY_STREAK", 365)
 
         // HABIT STREAK
         if (habitId != null) {
             val habit = habitDao.getHabitById(habitId)
-            when (habit?.streak) {
-                2 -> checkAndUnlockAchievement(userId, "HABIT_STREAK", 2)
-                7 -> checkAndUnlockAchievement(userId, "HABIT_STREAK", 7)
-                30 -> checkAndUnlockAchievement(userId, "HABIT_STREAK", 30)
-                60 -> checkAndUnlockAchievement(userId, "HABIT_STREAK", 60)
-                100 -> checkAndUnlockAchievement(userId, "HABIT_STREAK", 100)
-                365 -> checkAndUnlockAchievement(userId, "HABIT_STREAK", 365)
+
+            habit?.let {
+                if (it.streak >= 2) checkAndUnlockAchievement(userId, "HABIT_STREAK", 2)
+                if (it.streak >= 7) checkAndUnlockAchievement(userId, "HABIT_STREAK", 7)
+                if (it.streak >= 30) checkAndUnlockAchievement(userId, "HABIT_STREAK", 30)
+                if (it.streak >= 60) checkAndUnlockAchievement(userId, "HABIT_STREAK", 60)
+                if (it.streak >= 100) checkAndUnlockAchievement(userId, "HABIT_STREAK", 100)
+                if (it.streak >= 365) checkAndUnlockAchievement(userId, "HABIT_STREAK", 365)
             }
         }
 
         // COLECIONADOR
-        when (habits.size) {
-            1 -> checkAndUnlockAchievement(userId, "COLECIONADOR", 1)
-            3 -> checkAndUnlockAchievement(userId, "COLECIONADOR", 3)
-            10 -> checkAndUnlockAchievement(userId, "COLECIONADOR", 10)
-            20 -> checkAndUnlockAchievement(userId, "COLECIONADOR", 20)
-            50 -> checkAndUnlockAchievement(userId, "COLECIONADOR", 50)
-        }
+        if (habits.size >= 1) checkAndUnlockAchievement(userId, "COLECIONADOR", 1)
+        if (habits.size >= 3) checkAndUnlockAchievement(userId, "COLECIONADOR", 3)
+        if (habits.size >= 10) checkAndUnlockAchievement(userId, "COLECIONADOR", 10)
+        if (habits.size >= 20) checkAndUnlockAchievement(userId, "COLECIONADOR", 20)
+        if (habits.size >= 50) checkAndUnlockAchievement(userId, "COLECIONADOR", 50)
 
         // META-CHAMPION
         val unlockedCount = achievementUserDao.countUnlockedByUser(userId)
-        when (unlockedCount) {
-            5 -> checkAndUnlockAchievement(userId, "META_CHAMPION", 5)
-            15 -> checkAndUnlockAchievement(userId, "META_CHAMPION", 15)
-            30 -> checkAndUnlockAchievement(userId, "META_CHAMPION", 30)
-        }
+        if (unlockedCount >= 5) checkAndUnlockAchievement(userId, "META_CHAMPION", 5)
+        if (unlockedCount >= 15) checkAndUnlockAchievement(userId, "META_CHAMPION", 15)
+        if (unlockedCount >= 30) checkAndUnlockAchievement(userId, "META_CHAMPION", 30)
     }
 }

@@ -59,16 +59,20 @@ class HabitProgressionActivity : AppCompatActivity() {
                     )
                 }
 
+                // ✅ AGUARDA a atualização estar completa
                 db.habitDao().updateHabit(updatedHabit)
 
+                // ✅ Adiciona XP e Pontos
                 userRepository.addXpAndPoints(
                     userId = habit.userId,
                     xpEarned = 10,
                     pointsEarned = 25
                 )
 
+                // ✅ Atualiza streak diário
                 userRepository.updateDailyStreak(habit.userId)
 
+                // ✅ AGORA verifica achievements - o hábito já foi atualizado no DB
                 checkAchievementRepository.checkAllAchievements(habit.userId, habitId)
 
                 val intent = Intent(this@HabitProgressionActivity, MainActivity::class.java)
