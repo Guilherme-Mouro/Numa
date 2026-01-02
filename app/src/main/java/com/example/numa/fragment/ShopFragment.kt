@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.numa.DailyQuestRepository
 import com.example.numa.R
 import com.example.numa.util.UserRepository
 import com.example.numa.adapter.ShopItemAdapter
@@ -160,6 +161,8 @@ class ShopFragment : Fragment() {
                 db.userItemDao().insertUserItem(UserItem(userId = userId, itemId = shopItem.id))
 
                 UserRepository(db.userDao()).addXpAndPoints(userId, 0, -shopItem.price)
+                val questRepo = DailyQuestRepository(db.dailyQuestDao())
+                questRepo.incrementProgress(userId, DailyQuestRepository.TYPE_SHOP)
 
                 val recyclerView = types[shopItem.type]
                 (recyclerView?.adapter as? ShopItemAdapter)?.markItemAsOwned(shopItem.id)

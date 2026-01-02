@@ -15,6 +15,8 @@ import com.example.numa.fragment.HomeFragment
 import com.example.numa.fragment.QuestFragment
 import com.example.numa.fragment.ShopFragment
 import com.example.numa.fragment.SleepFragment
+// Certifica-te que este import está a apontar para onde criaste o ficheiro
+import com.example.numa.DailyQuestRepository
 import com.example.numa.util.DatabaseProvider
 import com.example.numa.util.SessionManager
 import kotlinx.coroutines.launch
@@ -29,13 +31,16 @@ class MainActivity : AppCompatActivity() {
     )
     private var lastMenuItemId: Int = R.id.home
 
-
     private lateinit var binding: ActivityMainBinding
     private var lastSelectedView: View? = null
+
+    // Inicialização da Base de Dados
     private val database by lazy { DatabaseProvider.getDatabase(this) }
+
     private val achievementRepository by lazy {
         AchievementRepository(database.achievementDao())
     }
+
     private val sharedPref by lazy {
         getSharedPreferences("app_prefs", MODE_PRIVATE)
     }
@@ -43,7 +48,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Inicializa Achievements (uma vez)
         initializeAchievements()
+
+        // Inicializa Missões Diárias (Verifica sempre que a app abre)
+        initializeDailyQuests()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -62,7 +71,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadUserDetails(userId: Int?) {
-
         lifecycleScope.launch {
             userId?.let {
                 val user = database.userDao().getUserById(userId)
@@ -76,7 +84,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun changeMenuItem(fragment: Fragment, newItemId: Int) {
-
         val lastIndex = menuOrder.indexOf(lastMenuItemId)
         val newIndex = menuOrder.indexOf(newItemId)
 
@@ -102,7 +109,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun changePage() {
         binding.bottomNav.setOnItemSelectedListener { item ->
-
             val selectedView = binding.bottomNav.findViewById<View>(item.itemId)
 
             when (item.itemId) {
@@ -120,6 +126,27 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    private fun initializeDailyQuests() {
+        lifecycleScope.launch {
+            try {
+                val sessionManager = SessionManager(this@MainActivity)
+                val userId = sessionManager.getUserId()
+
+                if (userId != null) {
+                    // Instancia o repositório usando o DAO da base de dados existente
+                    val dailyQuestRepository = DailyQuestRepository(database.dailyQuestDao())
+
+                    // Executa a verificação (se for dia novo, reseta; se não, mantém)
+                    dailyQuestRepository.checkAndGenerateQuests(userId)
+
+                    Log.d("MainActivity", "✅ Daily Missions verificadas com sucesso.")
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "❌ Erro ao inicializar Daily Missions: ${e.message}")
+            }
+        }
+    }
 
     private fun initializeAchievements() {
         lifecycleScope.launch {
@@ -140,13 +167,10 @@ class MainActivity : AppCompatActivity() {
                 Log.e("MainActivity", "❌ Erro ao inicializar achievements: ${e.message}")
             }
         }
-
-
     }
+
     private fun clearSharedPreferencesForTesting() {
         Log.w("MainActivity", "🚨 LIMPEZA DE DADOS: Apagando 'app_prefs' para teste.")
-
-        // Limpa todas as chaves no arquivo "app_prefs"
         sharedPref.edit {
             clear()
         }

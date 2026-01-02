@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.lifecycle.lifecycleScope
 import com.example.numa.CheckAchievementRepository
+import com.example.numa.DailyQuestRepository
 import com.example.numa.databinding.FragmentAddHabitBinding
 import com.example.numa.entity.Habit
 import com.example.numa.util.DatabaseProvider
@@ -39,7 +40,8 @@ class AddHabitFragment : BottomSheetDialogFragment() {
             db.achievementDao(),
             db.achievementUserDao(),
             db.userDao(),
-            db.habitDao()
+            db.habitDao(),
+            db.sleepDao()
         )
 
         // ✅ Adicionar "Everyday" como primeira opção
@@ -135,6 +137,9 @@ class AddHabitFragment : BottomSheetDialogFragment() {
                         db.habitDao().insertHabit(newHabit)
 
                         checkAchievementRepository.checkAllAchievements(nonNullUserId)
+
+                        val questRepo = DailyQuestRepository(db.dailyQuestDao())
+                        questRepo.incrementProgress(userId, DailyQuestRepository.TYPE_CREATE)
 
                         withContext(Dispatchers.Main) {
                             parentFragmentManager.setFragmentResult("habit_request", Bundle())

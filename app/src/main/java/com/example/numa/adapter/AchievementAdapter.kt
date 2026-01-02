@@ -27,16 +27,18 @@ class AchievementAdapter(
                     "HABIT_STREAK" -> R.drawable.ic_fire
                     "COLECIONADOR" -> R.drawable.ic_collection
                     "META_CHAMPION" -> R.drawable.ic_trophy
+                    "SLEEP" -> R.drawable.ic_moon
                     else -> R.drawable.ic_fire
                 }
                 ivIcon.setImageResource(iconResId)
 
                 // 2. Define Cor do Ícone baseado no type
                 val iconColorResId = when (achievement.type) {
-                    "DAILY_STREAK" -> R.color.red_icon // Certifique-se de que este recurso de cor existe
-                    "HABIT_STREAK" -> R.color.purple_icon // Certifique-se de que este recurso de cor existe
-                    "COLECIONADOR" -> R.color.blue_icon // Certifique-se de que este recurso de cor existe
-                    "META_CHAMPION" -> R.color.gold_icon // Certifique-se de que este recurso de cor existe
+                    "DAILY_STREAK" -> R.color.red_icon
+                    "HABIT_STREAK" -> R.color.purple_icon
+                    "COLECIONADOR" -> R.color.blue_icon
+                    "META_CHAMPION" -> R.color.gold_icon
+                    "SLEEP" -> R.color.light_blue
                     else -> R.color.default_icon_color // Cor padrão
                 }
 
@@ -51,6 +53,7 @@ class AchievementAdapter(
                     "HABIT_STREAK" -> R.drawable.bg_achievement_purple
                     "COLECIONADOR" -> R.drawable.bg_achievement_blue
                     "META_CHAMPION" -> R.drawable.bg_achievement_gold
+                    "SLEEP" -> R.drawable.bg_achievement_darkblue
                     else -> R.drawable.bg_achievement_red
                 }
 

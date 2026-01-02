@@ -167,6 +167,47 @@ class AchievementRepository(private val achievementDao: AchievementDao) {
                 points = 700,
                 experience = 350,
             ),
+            // SLEEP
+            Achievement(
+                type = "SLEEP",
+                level = 1,
+                title = "Primeira Noite",
+                description = "Registar 1 sono",
+                points = 10,
+                experience = 5,
+            ),
+            Achievement(
+                type = "SLEEP",
+                level = 3,
+                title = "Três Noites",
+                description = "Registar 3 sonos",
+                points = 30,
+                experience = 15,
+            ),
+            Achievement(
+                type = "SLEEP",
+                level = 7,
+                title = "Semana de Descanso",
+                description = "Registar 7 sonos",
+                points = 70,
+                experience = 35,
+            ),
+            Achievement(
+                type = "SLEEP",
+                level = 30,
+                title = "Mês de Sono",
+                description = "Registar 30 sonos",
+                points = 250,
+                experience = 125,
+            ),
+            Achievement(
+                type = "SLEEP",
+                level = 60,
+                title = "Dorminhoco Dedicado",
+                description = "Registar 60 sonos",
+                points = 500,
+                experience = 250,
+            )
         )
 
         achievements.forEach { achievement ->

@@ -12,6 +12,7 @@ import com.example.numa.util.LongFormatter
 import com.example.numa.util.UserRepository
 import kotlinx.coroutines.launch
 import com.example.numa.CheckAchievementRepository
+import com.example.numa.DailyQuestRepository
 import org.threeten.bp.LocalDate
 import org.threeten.bp.ZoneId
 
@@ -34,7 +35,8 @@ class HabitProgressionActivity : AppCompatActivity() {
             db.achievementDao(),
             db.achievementUserDao(),
             db.userDao(),
-            db.habitDao()
+            db.habitDao(),
+            db.sleepDao()
         )
 
         val habitId = intent.getIntExtra("habitId", -1)
@@ -59,21 +61,23 @@ class HabitProgressionActivity : AppCompatActivity() {
                     )
                 }
 
-                // ✅ AGUARDA a atualização estar completa
                 db.habitDao().updateHabit(updatedHabit)
 
-                // ✅ Adiciona XP e Pontos
+                // Adiciona XP e Pontos
                 userRepository.addXpAndPoints(
                     userId = habit.userId,
                     xpEarned = 10,
                     pointsEarned = 25
                 )
 
-                // ✅ Atualiza streak diário
+                // Atualiza streak diário
                 userRepository.updateDailyStreak(habit.userId)
 
-                // ✅ AGORA verifica achievements - o hábito já foi atualizado no DB
+                // verifica achievements - o hábito já foi atualizado no DB
                 checkAchievementRepository.checkAllAchievements(habit.userId, habitId)
+
+                val questRepo = DailyQuestRepository(db.dailyQuestDao())
+                questRepo.incrementProgress(habit.userId, DailyQuestRepository.TYPE_HABIT)
 
                 val intent = Intent(this@HabitProgressionActivity, MainActivity::class.java)
                 startActivity(intent)
