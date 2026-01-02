@@ -18,6 +18,9 @@ import com.example.numa.entity.User
 import com.example.numa.entity.AchievementUser
 import com.example.numa.entity.ShopItem
 import com.example.numa.entity.UserItem
+import com.example.numa.dao.DailyQuestDao
+import com.example.numa.entity.DailyQuest
+
 
 @Database(
     entities = [
@@ -29,8 +32,9 @@ import com.example.numa.entity.UserItem
         AchievementUser::class,
         ShopItem::class,
         UserItem::class,
+        DailyQuest::class,
                ],
-    version = 11,
+    version = 12,
     exportSchema = false
 )
 
@@ -45,5 +49,6 @@ abstract class DataBase : RoomDatabase() {
     abstract fun shopItemDao(): ShopItemDao
     abstract fun userItemDao(): UserItemDao
 
+    abstract fun dailyQuestDao(): DailyQuestDao
 
 }

@@ -4,6 +4,7 @@ import com.example.numa.dao.AchievementDao
 import com.example.numa.dao.AchievementUserDao
 import com.example.numa.dao.UserDao
 import com.example.numa.dao.HabitDao
+import com.example.numa.dao.SleepDao
 import com.example.numa.entity.AchievementUser
 import com.example.numa.util.UserRepository
 
@@ -11,7 +12,8 @@ class CheckAchievementRepository(
     private val achievementDao: AchievementDao,
     private val achievementUserDao: AchievementUserDao,
     private val userDao: UserDao,
-    private val habitDao: HabitDao
+    private val habitDao: HabitDao,
+    private val sleepDao: SleepDao
 ) {
 
     // Inicializa o UserRepository aqui usando o userDao existente
@@ -74,6 +76,14 @@ class CheckAchievementRepository(
         if (habits.size >= 10) checkAndUnlockAchievement(userId, "COLECIONADOR", 10)
         if (habits.size >= 20) checkAndUnlockAchievement(userId, "COLECIONADOR", 20)
         if (habits.size >= 50) checkAndUnlockAchievement(userId, "COLECIONADOR", 50)
+
+        // SLEEP
+        val sleepCount = sleepDao.getAllSleepForUser(userId).size
+        if (sleepCount >= 1) checkAndUnlockAchievement(userId, "SLEEP", 1)
+        if (sleepCount >= 3) checkAndUnlockAchievement(userId, "SLEEP", 3)
+        if (sleepCount >= 7) checkAndUnlockAchievement(userId, "SLEEP", 7)
+        if (sleepCount >= 30) checkAndUnlockAchievement(userId, "SLEEP", 30)
+        if (sleepCount >= 60) checkAndUnlockAchievement(userId, "SLEEP", 60)
 
         // META-CHAMPION
         val unlockedCount = achievementUserDao.countUnlockedByUser(userId)

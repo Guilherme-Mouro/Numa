@@ -9,11 +9,12 @@ import com.example.numa.entity.Sleep
 import com.example.numa.util.DatabaseProvider
 import com.example.numa.util.SessionManager
 import com.google.android.gms.location.SleepSegmentEvent
+import com.example.numa.CheckAchievementRepository
+import com.example.numa.DailyQuestRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -42,16 +43,18 @@ class SleepDataReceiver : BroadcastReceiver() {
                 val userDao = database.userDao()
                 val userRepository = UserRepository(userDao)
 
+                val checkAchievementRepository = CheckAchievementRepository(
+                    database.achievementDao(),
+                    database.achievementUserDao(),
+                    database.userDao(),
+                    database.habitDao(),
+                    database.sleepDao()
+                )
+
                 for (event in sleepEvents) {
                     val startTimeFormatted = timeFormat.format(Date(event.startTimeMillis))
                     val endTimeFormatted = timeFormat.format(Date(event.endTimeMillis))
                     Log.d("SleepDataReceiver", "> Processando evento: Início=$startTimeFormatted, Fim=$endTimeFormatted, Status=${event.status}")
-
-                    // FILTRO DE RELEVÂNCIA: Apenas guardar eventos que começaram no período de "hoje".
-                    //if (event.startTimeMillis < sinceMillis) {
-                    // Log.w("SleepDataReceiver", "  -> IGNORADO (Evento é de um dia anterior)")
-                    //continue
-                    //}
 
                     if (event.status == SleepSegmentEvent.STATUS_SUCCESSFUL) {
                         // VERIFICAÇÃO DE DUPLICADOS: Já existe um registo com este startTime e endTime?
@@ -85,11 +88,18 @@ class SleepDataReceiver : BroadcastReceiver() {
                         )
                         sleepDao.insertSleep(newSleep)
                         Log.i("SleepDataReceiver", "  -> CRIADO novo registo de sono com Score=$score, Quality='$quality', XP=$experience")
+
                         userRepository.addXpAndPoints(
                             userId = userId,
                             xpEarned = experience,
                             pointsEarned = score.toInt()
                         )
+
+                        val questRepo = DailyQuestRepository(database.dailyQuestDao())
+                        questRepo.incrementProgress(userId, DailyQuestRepository.TYPE_SLEEP)
+
+
+                        checkAchievementRepository.checkAllAchievements(userId)
                     }
                 }
             }

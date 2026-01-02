@@ -19,6 +19,7 @@ import com.example.numa.adapter.Quest
 import com.example.numa.databinding.FragmentQuestBinding
 import com.example.numa.entity.Achievement
 import com.example.numa.CheckAchievementRepository
+import com.example.numa.DailyQuestRepository
 import com.example.numa.util.DatabaseProvider
 import com.example.numa.util.LevelUp
 import com.example.numa.util.SessionManager
@@ -29,10 +30,15 @@ class QuestFragment : Fragment() {
     private var _binding: FragmentQuestBinding? = null
     private val binding get() = _binding!!
 
+    // Adapters
     private lateinit var progressAdapter: ProgressQuestAdapter
     private lateinit var achievementAdapter: AchievementAdapter
-    private lateinit var checkAchievementRepository: CheckAchievementRepository
 
+    // Repositories
+    private lateinit var checkAchievementRepository: CheckAchievementRepository
+    private lateinit var dailyQuestRepository: DailyQuestRepository
+
+    // Helpers
     private val sessionManager by lazy { SessionManager(requireContext()) }
     private val database by lazy { DatabaseProvider.getDatabase(requireContext()) }
 
@@ -48,60 +54,113 @@ class QuestFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Inicializar o repositório ANTES de usar
+        val userId = sessionManager.getUserId()
+
+        // 1. Inicializar Repositórios
+        // Nota: Certifica-te que dailyQuestDao() foi adicionado ao teu DatabaseProvider/AppDatabase
         checkAchievementRepository = CheckAchievementRepository(
             database.achievementDao(),
             database.achievementUserDao(),
             database.userDao(),
-            database.habitDao()
+            database.habitDao(),
+            database.sleepDao()
         )
 
-        // Verificar achievements (movido para DEPOIS da inicialização)
-        val userId = sessionManager.getUserId()
-        lifecycleScope.launch {
-            if (userId != null) {
+        dailyQuestRepository = DailyQuestRepository(database.dailyQuestDao())
+
+        // 2. Configurar Componentes da UI (RecyclerViews e Spinner)
+        setupSpinner()
+        setupRecyclerViews()
+
+        // 3. Carregar Dados
+        if (userId != null) {
+            // Verifica conquistas
+            lifecycleScope.launch {
                 checkAchievementRepository.checkAllAchievements(userId)
             }
+
+            // Carrega stats do utilizador
+            loadUserStats(userId)
+
+            // Carrega Daily Missions (Lógica Nova)
+            loadDailyQuests(userId)
+
+            // Carrega Achievements iniciais
+            loadAchievements()
         }
-
-        // 1. Configurar componentes da UI
-        setupSpinner()
-        setupProgressQuestRecyclerView()
-        setupAchievementsRecyclerView()
-
-        // 2. Carregar dados
-        loadAchievements()
-
-        // 3. Carregar Estatísticas do User (Level e XP)
-        loadUserStats()
     }
 
-    private fun loadUserStats() {
+    // --- SECÇÃO: DAILY MISSIONS (NOVA) ---
+
+    private fun loadDailyQuests(userId: Int) {
         lifecycleScope.launch {
-            val userId = sessionManager.getUserId()
+            // 1. Verifica se é um novo dia e gera/reseta as missões se necessário
+            dailyQuestRepository.checkAndGenerateQuests(userId)
 
-            if (userId != null) {
-                val user = database.userDao().getUserById(userId)
+            // 2. Busca as missões da base de dados
+            val dbQuests = dailyQuestRepository.getQuests(userId)
 
-                if (user != null) {
-                    val xpNextLevel = LevelUp.xpForLevel(user.level)
+            // 3. Converte as missões da DB para o formato visual (Quest) usado no Adapter
+            val uiQuests = dbQuests.map { dbQuest ->
+                // Calcula a percentagem (ex: 1/2 = 50%)
+                // Evita divisão por zero e limita a 100%
+                val percentage = if (dbQuest.target > 0) {
+                    ((dbQuest.progress.toFloat() / dbQuest.target.toFloat()) * 100).toInt()
+                } else 0
 
-                    // Atualiza Level
-                    binding.tvUserLevel.text = "Lvl ${user.level}"
+                val finalPercentage = if (percentage > 100) 100 else percentage
 
-                    // Atualiza Pontos
-                    binding.tvUserPoints.text = "${user.points} Pts"
-
-                    // Atualiza XP
-                    binding.tvUserXP.text = "${user.experience} / $xpNextLevel XP"
-                }
+                Quest(
+                    title = "${dbQuest.description} (${dbQuest.progress}/${dbQuest.target})",
+                    progress = finalPercentage
+                )
             }
+
+            // 4. Atualiza o Adapter
+            progressAdapter = ProgressQuestAdapter(uiQuests)
+            binding.rvProgressQuest.adapter = progressAdapter
+        }
+    }
+
+    // --- SECÇÃO: USER STATS ---
+
+    private fun loadUserStats(userId: Int) {
+        lifecycleScope.launch {
+            val user = database.userDao().getUserById(userId)
+
+            if (user != null) {
+                val xpNextLevel = LevelUp.xpForLevel(user.level)
+
+                binding.tvUserLevel.text = "Lvl ${user.level}"
+                binding.tvUserPoints.text = "${user.points} Pts"
+                binding.tvUserXP.text = "${user.experience} / $xpNextLevel XP"
+            }
+        }
+    }
+
+    // --- SECÇÃO: SETUP UI ---
+
+    private fun setupRecyclerViews() {
+        // Setup Progress/Daily Quest Recycler (Inicialmente vazio ou com loading)
+        binding.rvProgressQuest.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            // O adapter será definido em loadDailyQuests()
+        }
+
+        // Setup Achievements Recycler
+        achievementAdapter = AchievementAdapter { achievement ->
+            showSimpleDetailsDialog(achievement)
+        }
+
+        binding.rvAchievements.apply {
+            adapter = achievementAdapter
+            layoutManager = GridLayoutManager(requireContext(), 2)
+            isNestedScrollingEnabled = false
         }
     }
 
     private fun setupSpinner() {
         val spinner = binding.includeSpinner.spinner
-
         val items = arrayOf("See All", "Desbloqueados", "Bloqueados")
 
         val adapterSpinner = object : ArrayAdapter<String>(
@@ -135,37 +194,11 @@ class QuestFragment : Fragment() {
                     2 -> loadLockedAchievements()
                 }
             }
-
             override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
         }
     }
 
-    private fun setupProgressQuestRecyclerView() {
-        val quests = listOf(
-            Quest("Complete 3 habits", 40),
-            Quest("Read 20 pages", 60),
-            Quest("Exercise 30 min", 85),
-            Quest("Drink 8 glasses water", 50)
-        )
-
-        progressAdapter = ProgressQuestAdapter(quests)
-        binding.rvProgressQuest.apply {
-            adapter = progressAdapter
-            layoutManager = LinearLayoutManager(requireContext())
-        }
-    }
-
-    private fun setupAchievementsRecyclerView() {
-        achievementAdapter = AchievementAdapter { achievement ->
-            showSimpleDetailsDialog(achievement)
-        }
-
-        binding.rvAchievements.apply {
-            adapter = achievementAdapter
-            layoutManager = GridLayoutManager(requireContext(), 2)
-            isNestedScrollingEnabled = false
-        }
-    }
+    // --- SECÇÃO: ACHIEVEMENTS ---
 
     private fun loadAchievements() {
         loadAllAchievements()
