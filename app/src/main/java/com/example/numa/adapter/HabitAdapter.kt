@@ -41,7 +41,7 @@ class HabitAdapter(
         val habit = habits[position]
         holder.title.text = habit.title
         holder.duration.text = "${(habit.duration / (60 * 1000)).toString()} min"
-        holder.streak.text = "${habit.streak} dias"
+        holder.streak.text = "${habit.streak} days"
         holder.xp.text = "+${habit.experience} XP"
 
         // ✅ Usar a data selecionada, não LocalDate.now()

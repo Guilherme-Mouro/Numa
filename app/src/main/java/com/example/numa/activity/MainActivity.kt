@@ -1,5 +1,6 @@
 package com.example.numa.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -34,7 +35,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var lastSelectedView: View? = null
 
-    // Inicialização da Base de Dados
     private val database by lazy { DatabaseProvider.getDatabase(this) }
 
     private val achievementRepository by lazy {
@@ -66,6 +66,11 @@ class MainActivity : AppCompatActivity() {
         val sessionManager = SessionManager(this)
         val userId = sessionManager.getUserId()
         //sessionManager.deleteUserId()
+
+        binding.layoutHeader.setOnClickListener {
+            val intent = Intent(this, ProfileActivity::class.java)
+            startActivity(intent)
+        }
 
         loadUserDetails(userId)
     }

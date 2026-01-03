@@ -24,7 +24,7 @@
                 android:id="@+id/imgItem"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:src="@drawable/cat_banner_1"
+                android:src="@drawable/black_cat_banner_2"
                 app:layout_constraintTop_toTopOf="parent"/>
 
             <TextView
