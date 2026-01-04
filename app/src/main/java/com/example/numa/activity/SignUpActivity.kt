@@ -3,7 +3,6 @@ package com.example.numa.activity
 import android.content.Intent
 import android.graphics.drawable.AnimationDrawable
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.numa.R
@@ -41,7 +40,7 @@ class SignUpActivity : AppCompatActivity() {
 
         val characterImageView = binding.imgAnim
 
-        characterImageView.setBackgroundResource(R.drawable.cat_banner_animation)
+        characterImageView.setBackgroundResource(R.drawable.black_cat_banner_animation)
 
         FixPixelArt.removeAnimFilter(characterImageView)
 
@@ -67,7 +66,7 @@ class SignUpActivity : AppCompatActivity() {
                     userId = userId,
                     name = binding.edPetName.text.toString(),
                     humor = "happy",
-                    skin = "black_cat_idle_animation",
+                    skin = "black_cat_",
                     head = null,
                     torso = null,
                     legs = null,
