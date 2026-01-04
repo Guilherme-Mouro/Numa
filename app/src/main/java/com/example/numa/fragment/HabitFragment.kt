@@ -85,14 +85,13 @@ class HabitFragment : Fragment() {
                 val dayOfWeek = date.dayOfWeek.name
                 val specificDate = date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
 
-                // ✅ Calcular o início do dia selecionado (00:00:00)
                 val todayStart = date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
 
                 val habits = db.habitDao().getHabitsForDate(
                     dayOfWeek = dayOfWeek,
                     specificDate = specificDate,
                     userId = userId,
-                    todayStart = todayStart // ✅ Passa o timestamp
+                    todayStart = todayStart
                 )
 
                 if (habits.isEmpty()) {
@@ -108,7 +107,7 @@ class HabitFragment : Fragment() {
                         intent.putExtra("habitId", habit.id)
                         startActivity(intent)
                     },
-                    selectedDay // ✅ Passa o dia selecionado
+                    selectedDay
                 )
                 binding.rvHabits.adapter = habitsAdapter
             }
@@ -121,7 +120,6 @@ class HabitFragment : Fragment() {
         lifecycleScope.launch {
             val today = LocalDate.now().dayOfWeek.name
 
-            // ✅ Calcular o início de hoje
             val todayStart = LocalDate.now()
                 .atStartOfDay(ZoneId.systemDefault())
                 .toEpochSecond() * 1000
@@ -131,7 +129,7 @@ class HabitFragment : Fragment() {
                     today,
                     1,
                     userId,
-                    todayStart // ✅ Passa o timestamp
+                    todayStart
                 )
 
                 if (habits.isNotEmpty()) {
@@ -139,7 +137,6 @@ class HabitFragment : Fragment() {
                     var totalCompletedHabits = 0
 
                     for (habit in habits) {
-                        // ✅ Verifica se foi completado hoje
                         if (habit.lastCompletedDate >= todayStart) {
                             totalCompletedHabits++
                         }

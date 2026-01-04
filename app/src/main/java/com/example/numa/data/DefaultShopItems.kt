@@ -12,7 +12,7 @@ object DefaultShopItems {
             description = "A friendly orange cat",
             price = 100,
             image = "orange_cat_banner_1",
-            item = "orange_cat_idle_animation",
+            item = "orange_cat_",
             type = "skin"
         ),
         ShopItem(
@@ -21,7 +21,7 @@ object DefaultShopItems {
             description = "A polite white cat",
             price = 200,
             image = "white_cat_banner_1",
-            item = "white_cat_idle_animation",
+            item = "white_cat_",
             type = "skin"
         ),
         ShopItem(
@@ -30,7 +30,7 @@ object DefaultShopItems {
             description = "A mysterious gray cat",
             price = 300,
             image = "gray_cat_banner_1",
-            item = "gray_cat_idle_animation",
+            item = "gray_cat_",
             type = "skin"
         ),
 

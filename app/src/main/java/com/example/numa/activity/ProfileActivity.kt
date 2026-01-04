@@ -40,14 +40,10 @@ import java.util.UUID
 class ProfileActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileBinding
     private val db by lazy { DatabaseProvider.getDatabase(this) }
-
-    // Bluetooth
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private var isScanning = false
     private val handler = Handler(Looper.getMainLooper())
     private var bluetoothGatt: BluetoothGatt? = null
-
-    // Lista para evitar duplicados visualmente
     private val foundDevicesAddresses = mutableSetOf<String>()
 
     private val requestPermissionLauncher =
@@ -56,7 +52,7 @@ class ProfileActivity : AppCompatActivity() {
             if (allGranted) {
                 startBleScan()
             } else {
-                Toast.makeText(this, "Permissões necessárias para encontrar o relógio.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Permissions needed to find the watch.", Toast.LENGTH_LONG).show()
             }
         }
 
@@ -92,21 +88,24 @@ class ProfileActivity : AppCompatActivity() {
                     binding.tvName.text = user.name
                     binding.tvPoints.text = user.points.toString()
                     binding.tvStreak.text = user.streak.toString() + " days"
+
                     val petBanner = binding.imgPetBanner
-                    petBanner.setBackgroundResource(R.drawable.cat_banner_animation)
+                    val petSkin = resources.getIdentifier(pet.skin + "banner_animation", "drawable", this@ProfileActivity.packageName)
+
+                    petBanner.setBackgroundResource(petSkin)
                     FixPixelArt.removeAnimFilter(petBanner)
                     val characterAnimation = petBanner.background as AnimationDrawable
+
                     characterAnimation.start()
                     binding.tvPetName.text = pet.name
-                    binding.tvPetHumor.text = pet.humor
-                }
+                    binding.tvPetHumor.text = pet.humor.replaceFirstChar { it.uppercase() }                }
             }
         }
     }
 
     private fun prepareAndScan() {
         if (!bluetoothAdapter.isEnabled) {
-            Toast.makeText(this, "Liga o Bluetooth primeiro!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Turn on Bluetooth first!", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -133,22 +132,19 @@ class ProfileActivity : AppCompatActivity() {
 
         val scanner = bluetoothAdapter.bluetoothLeScanner
         if (scanner == null) {
-            Toast.makeText(this, "Bluetooth não disponível.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Bluetooth not available.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Reset da UI e Conexões
         bluetoothGatt?.close()
         bluetoothGatt = null
 
-        // LIMPEZA IMPORTANTE: Removemos os botões da lista anterior
         binding.llDeviceList.removeAllViews()
         foundDevicesAddresses.clear()
 
         isScanning = true
         binding.progressBar.visibility = View.VISIBLE
-        binding.btnScan.isEnabled = false
-        binding.btnScan.text = "A procurar..."
+        binding.btnScan.visibility = View.GONE
 
         scanner.startScan(scanCallback)
 
@@ -163,19 +159,18 @@ class ProfileActivity : AppCompatActivity() {
         val scanner = bluetoothAdapter.bluetoothLeScanner
         scanner?.stopScan(scanCallback)
 
-        // Se não conectou a ninguém, restaura a UI
         if (bluetoothGatt == null) {
             binding.progressBar.visibility = View.GONE
+            binding.btnScan.visibility = View.VISIBLE
             binding.btnScan.isEnabled = true
             binding.btnScan.text = "Add New Device +"
 
             if (foundDevicesAddresses.isEmpty()) {
-                addMessageToLayout("Nenhum dispositivo encontrado.")
+                addMessageToLayout("No devices found.")
             }
         }
     }
 
-    // Função auxiliar para adicionar texto simples à lista
     private fun addMessageToLayout(message: String) {
         val textView = TextView(this)
         textView.text = message
@@ -184,20 +179,17 @@ class ProfileActivity : AppCompatActivity() {
         binding.llDeviceList.addView(textView)
     }
 
-    // --- LÓGICA DE CONEXÃO AO CLICAR ---
     @SuppressLint("MissingPermission")
     private fun connectToDevice(device: BluetoothDevice) {
-        // Parar scan antes de conectar
         stopBleScan()
 
         binding.progressBar.visibility = View.VISIBLE
-        binding.btnScan.text = "A conectar..."
+        binding.btnScan.visibility = View.GONE
 
-        // Limpar a lista visual e mostrar apenas "A conectar..."
         binding.llDeviceList.removeAllViews()
-        addMessageToLayout("A conectar a ${device.name ?: "Dispositivo"}...")
+        addMessageToLayout("Connecting to ${device.name ?: "Device"}...")
 
-        Log.d("NumaBluetooth", "A conectar a ${device.address}")
+        Log.d("NumaBluetooth", "Connecting to ${device.address}")
         bluetoothGatt = device.connectGatt(this, false, gattCallback)
     }
 
@@ -208,18 +200,14 @@ class ProfileActivity : AppCompatActivity() {
             val deviceName = device.name
             val deviceAddress = device.address
 
-            // Filtro: Se tem nome e ainda não está na lista
             if (deviceName != null && !foundDevicesAddresses.contains(deviceAddress)) {
                 foundDevicesAddresses.add(deviceAddress)
 
-                // CRIAÇÃO DO BOTÃO DINÂMICO
-                // Criamos um botão para cada relógio encontrado
                 val deviceButton = Button(this@ProfileActivity)
                 deviceButton.text = "$deviceName\n$deviceAddress"
                 deviceButton.textSize = 14f
                 deviceButton.isAllCaps = false
 
-                // Estilo simples para ficar bonito na lista
                 val params = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
@@ -227,18 +215,16 @@ class ProfileActivity : AppCompatActivity() {
                 params.setMargins(0, 8, 0, 8)
                 deviceButton.layoutParams = params
 
-                // O QUE ACONTECE QUANDO CLICAS NELE:
                 deviceButton.setOnClickListener {
                     connectToDevice(device)
                 }
 
-                // Adiciona o botão ao layout
                 binding.llDeviceList.addView(deviceButton)
             }
         }
 
         override fun onScanFailed(errorCode: Int) {
-            Log.e("NumaBluetooth", "Scan falhou: $errorCode")
+            Log.e("NumaBluetooth", "Scan failed: $errorCode")
             stopBleScan()
         }
     }
@@ -249,17 +235,18 @@ class ProfileActivity : AppCompatActivity() {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 runOnUiThread {
                     binding.llDeviceList.removeAllViews()
-                    addMessageToLayout("Conectado! A descobrir serviços...")
+                    addMessageToLayout("Connected! Discovering services...")
                 }
                 gatt.discoverServices()
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 runOnUiThread {
                     binding.progressBar.visibility = View.GONE
+                    binding.btnScan.visibility = View.VISIBLE
                     binding.btnScan.isEnabled = true
                     binding.btnScan.text = "Add New Device +"
                     binding.llDeviceList.removeAllViews()
-                    addMessageToLayout("Desconectado.")
+                    addMessageToLayout("Disconnected.")
                 }
                 bluetoothGatt = null
             }
@@ -279,8 +266,9 @@ class ProfileActivity : AppCompatActivity() {
                 } else {
                     runOnUiThread {
                         binding.llDeviceList.removeAllViews()
-                        addMessageToLayout("Conectado!\n(Bateria não acessível)")
+                        addMessageToLayout("Connected!\n(Battery not accessible)")
                         binding.progressBar.visibility = View.GONE
+                        binding.btnScan.visibility = View.VISIBLE
                         binding.btnScan.text = "Connected"
                     }
                 }
@@ -291,7 +279,6 @@ class ProfileActivity : AppCompatActivity() {
             handleBatteryRead(characteristic)
         }
 
-        // Compatibilidade Android antigo
         @Deprecated("Deprecated in Java")
         override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
             handleBatteryRead(characteristic)
@@ -301,8 +288,9 @@ class ProfileActivity : AppCompatActivity() {
             val batteryLevel = characteristic.value.firstOrNull()?.toInt() ?: 0
             runOnUiThread {
                 binding.llDeviceList.removeAllViews()
-                addMessageToLayout("Conectado!\nBateria: $batteryLevel%")
+                addMessageToLayout("Connected!\nBattery: $batteryLevel%")
                 binding.progressBar.visibility = View.GONE
+                binding.btnScan.visibility = View.VISIBLE
                 binding.btnScan.text = "Connected"
             }
         }

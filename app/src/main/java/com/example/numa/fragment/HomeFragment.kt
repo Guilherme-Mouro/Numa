@@ -27,7 +27,6 @@ class HomeFragment : Fragment() {
     private val db by lazy { DatabaseProvider.getDatabase(requireContext()) }
     private lateinit var habitsAdapter: HabitAdapter
 
-    // ✅ Variável para rastrear a data selecionada (padrão é hoje)
     private var selectedDate: LocalDate = LocalDate.now()
 
     override fun onCreateView(
@@ -58,7 +57,7 @@ class HomeFragment : Fragment() {
 
                 if (pet != null) {
                     val petSprite = binding.imgPet
-                    val petSkin = resources.getIdentifier(pet.skin, "drawable", requireContext().packageName)
+                    val petSkin = resources.getIdentifier(pet.skin + "idle_animation", "drawable", requireContext().packageName)
 
                     if (petSkin != 0) {
                         petSprite.setBackgroundResource(petSkin)
@@ -74,20 +73,16 @@ class HomeFragment : Fragment() {
         }
     }
 
-    // ✅ Modificar para aceitar uma data como parâmetro
     private fun loadHabits(date: LocalDate, userId: Int?) {
         lifecycleScope.launch {
 
             val uid = userId ?: return@launch
 
-            // ✅ Usar a data passada como parâmetro, não LocalDate.now()
             val dayOfWeek = date.dayOfWeek.name
             val specificDate = date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
 
-            // ✅ Calcular o início do dia SELECIONADO (não hoje)
             val selectedDayStart = date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
 
-            // ✅ Passar o parâmetro selectedDayStart
             val habitsForDate = db.habitDao().getHabitsForDate(
                 dayOfWeek,
                 specificDate,
@@ -127,7 +122,7 @@ class HomeFragment : Fragment() {
                             intent.putExtra("habitId", habit.id)
                             startActivity(intent)
                         },
-                        date // ✅ Passa a data selecionada
+                        date
                     )
                 }
             }
@@ -141,7 +136,7 @@ class HomeFragment : Fragment() {
                     adapter = HabitAdapter(
                         habitsCompleted.toMutableList(),
                         { habit -> },
-                        date // ✅ Passa a data selecionada
+                        date
                     )
                 }
             }
