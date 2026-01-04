@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,19 +9,17 @@
     android:padding="16dp"
     tools:context=".fragment.SleepFragment">
 
-    <!-- Header -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Últimos Registos de Sono"
+        android:text="Sleep History"
         android:textColor="@color/white"
-        android:textSize="24sp"
+        android:textSize="28sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Sleep Segments List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvSleepSegments"
         android:layout_width="0dp"
@@ -46,13 +45,13 @@
         app:layout_constraintStart_toStartOf="@+id/rvSleepSegments"
         app:layout_constraintTop_toTopOf="@+id/rvSleepSegments" />
 
-    <!-- Action Button -->
+    <!-- Action  -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnToggleSleepTracking"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:text="Iniciar Monitoramento"
+        android:text="Start Tracking"
         android:textAllCaps="false"
         android:textSize="16sp"
         android:textColor="@color/white"

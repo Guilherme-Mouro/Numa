@@ -36,7 +36,7 @@ class SleepFragment : Fragment() {
         if (permissions.all { it.value }) {
             startTrackingService()
         } else {
-            Toast.makeText(requireContext(), "São necessárias permissões para monitorar o sono.", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), "Permissions are required to track sleep.", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -72,14 +72,13 @@ class SleepFragment : Fragment() {
         if (userId == null) {
             binding.rvSleepSegments.isVisible = false
             binding.tvNoData.isVisible = true
-            binding.tvNoData.text = "Faça login para ver os seus registos."
+            binding.tvNoData.text = "Login to check your history."
             return
         }
 
         lifecycleScope.launch {
             val sleepDao = DatabaseProvider.getDatabase(requireContext()).sleepDao()
 
-            // Utiliza a nova função para ir buscar os últimos 7 registos
             val sleepSegments = sleepDao.getLatest7SleepSegments(userId)
 
             if (sleepSegments.isNotEmpty()) {
@@ -89,7 +88,7 @@ class SleepFragment : Fragment() {
             } else {
                 binding.rvSleepSegments.isVisible = false
                 binding.tvNoData.isVisible = true
-                binding.tvNoData.text = "Nenhum registo de sono encontrado."
+                binding.tvNoData.text = "No sleep data yet."
             }
         }
     }
@@ -129,7 +128,7 @@ class SleepFragment : Fragment() {
         requireActivity().startService(intent)
         isTracking = true
         updateButtonUI()
-        Toast.makeText(requireContext(), "Monitoramento de sono iniciado.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "Sleep tracking started.", Toast.LENGTH_SHORT).show()
     }
 
     private fun stopTrackingService() {
@@ -139,14 +138,14 @@ class SleepFragment : Fragment() {
         requireActivity().startService(intent)
         isTracking = false
         updateButtonUI()
-        Toast.makeText(requireContext(), "Monitoramento de sono parado.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "Sleep tracking stopped.", Toast.LENGTH_SHORT).show()
     }
 
     private fun updateButtonUI() {
         if (isTracking) {
-            binding.btnToggleSleepTracking.text = "Parar Monitoramento"
+            binding.btnToggleSleepTracking.text = "Stop Tracking"
         } else {
-            binding.btnToggleSleepTracking.text = "Iniciar Monitoramento"
+            binding.btnToggleSleepTracking.text = "Start Tracking"
         }
     }
 

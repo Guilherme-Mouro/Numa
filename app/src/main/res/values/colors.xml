@@ -16,11 +16,6 @@
     <color name="yellow">#EBC351</color>
     <color name="red">#EB3223</color>
     <color name="green">#3DAF4A</color>
-
-    <color name="red_icon">#FF0000</color>
-    <color name="purple_icon">#800080</color>
-    <color name="blue_icon">#0000FF</color>
-    <color name="gold_icon">#FFD700</color>
-    <color name="default_icon_color">#CCCCCC</color>
+    <color name="purple">#800080</color>
 
 </resources>

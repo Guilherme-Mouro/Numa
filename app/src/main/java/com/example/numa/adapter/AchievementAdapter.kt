@@ -21,7 +21,6 @@ class AchievementAdapter(
             binding.apply {
                 tvText.text = achievement.title
 
-                // 1. Define Ícone baseado no type
                 val iconResId = when (achievement.type) {
                     "DAILY_STREAK" -> R.drawable.ic_fire
                     "HABIT_STREAK" -> R.drawable.ic_fire
@@ -32,22 +31,18 @@ class AchievementAdapter(
                 }
                 ivIcon.setImageResource(iconResId)
 
-                // 2. Define Cor do Ícone baseado no type
                 val iconColorResId = when (achievement.type) {
-                    "DAILY_STREAK" -> R.color.red_icon
-                    "HABIT_STREAK" -> R.color.purple_icon
-                    "COLECIONADOR" -> R.color.blue_icon
-                    "META_CHAMPION" -> R.color.gold_icon
+                    "DAILY_STREAK" -> R.color.red
+                    "HABIT_STREAK" -> R.color.purple
+                    "COLECIONADOR" -> R.color.light_blue
+                    "META_CHAMPION" -> R.color.yellow
                     "SLEEP" -> R.color.light_blue
-                    else -> R.color.default_icon_color // Cor padrão
+                    else -> R.color.light_grey
                 }
 
-                // 3. Aplica o filtro de cor ao ícone
                 val iconColor = ContextCompat.getColor(root.context, iconColorResId)
                 ivIcon.setColorFilter(iconColor)
 
-
-                // 4. Define Gradiente (Background) baseado no type (Lógica original)
                 val backgroundResId = when (achievement.type) {
                     "DAILY_STREAK" -> R.drawable.bg_achievement_red
                     "HABIT_STREAK" -> R.drawable.bg_achievement_purple
