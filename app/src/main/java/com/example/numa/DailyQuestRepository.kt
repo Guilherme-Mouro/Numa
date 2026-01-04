@@ -6,38 +6,32 @@ import java.util.Calendar
 
 class DailyQuestRepository(private val dailyQuestDao: DailyQuestDao) {
 
-    // Lista de tipos para usares como referência no código
     companion object {
-        const val TYPE_HABIT = "HABIT"       // Completar hábito
-        const val TYPE_SLEEP = "SLEEP"       // Registar sono
-        const val TYPE_CREATE = "CREATE"     // Criar hábito
-        const val TYPE_SHOP = "SHOP"         // Comprar na loja
+        const val TYPE_HABIT = "HABIT"
+        const val TYPE_SLEEP = "SLEEP"
+        const val TYPE_CREATE = "CREATE"
+        const val TYPE_SHOP = "SHOP"
     }
 
-    // 1. Verifica e Gera Missões
     suspend fun checkAndGenerateQuests(userId: Int) {
         val existingQuests = dailyQuestDao.getQuestsByUser(userId)
         val todayStart = getStartOfDay()
 
-        // Se não houver missões ou se as missões forem de um dia anterior -> RESET
         if (existingQuests.isEmpty() || existingQuests[0].date != todayStart) {
             dailyQuestDao.clearQuestsForUser(userId)
 
-            // Cria as missões
             val newQuests = listOf(
-                DailyQuest(userId = userId, type = TYPE_HABIT, description = "Completar um hábito", target = 1, date = todayStart),
-                DailyQuest(userId = userId, type = TYPE_SLEEP, description = "Registar o sono", target = 1, date = todayStart),
-                DailyQuest(userId = userId, type = TYPE_CREATE, description = "Criar um hábito", target = 1, date = todayStart),
-                DailyQuest(userId = userId, type = TYPE_HABIT, description = "Completar 2 hábitos", target = 2, date = todayStart),
-                DailyQuest(userId = userId, type = TYPE_SHOP, description = "Comprar algo na loja", target = 1, date = todayStart)
+                DailyQuest(userId = userId, type = TYPE_HABIT, description = "Complete a habit", target = 1, date = todayStart),
+                DailyQuest(userId = userId, type = TYPE_SLEEP, description = "Track your sleep", target = 1, date = todayStart),
+                DailyQuest(userId = userId, type = TYPE_CREATE, description = "Create a habit", target = 1, date = todayStart),
+                DailyQuest(userId = userId, type = TYPE_HABIT, description = "Complete two habits", target = 2, date = todayStart),
+                DailyQuest(userId = userId, type = TYPE_SHOP, description = "Buy something in the shop", target = 1, date = todayStart)
             )
             dailyQuestDao.insertQuests(newQuests)
         }
     }
 
-    // 2. Atualizar Progresso (Chamado quando o user faz algo)
     suspend fun incrementProgress(userId: Int, type: String) {
-        // Busca todas as missões ativas desse tipo (ex: completar 1 hábito e completar 2 hábitos)
         val quests = dailyQuestDao.getActiveQuestsByType(userId, type)
 
         for (quest in quests) {
@@ -52,7 +46,6 @@ class DailyQuestRepository(private val dailyQuestDao: DailyQuestDao) {
         return dailyQuestDao.getQuestsByUser(userId)
     }
 
-    // Utilitário para pegar 00:00:00 do dia atual
     private fun getStartOfDay(): Long {
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.HOUR_OF_DAY, 0)

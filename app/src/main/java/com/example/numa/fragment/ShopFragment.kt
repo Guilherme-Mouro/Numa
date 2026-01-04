@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.numa.R
+import com.example.numa.activity.MainActivity
 import com.example.numa.adapter.ShopItemAdapter
 import com.example.numa.databinding.FragmentShopBinding
 import com.example.numa.entity.ShopItem
@@ -165,6 +166,8 @@ class ShopFragment : Fragment() {
                 (recyclerView?.adapter as? ShopItemAdapter)?.markItemAsOwned(shopItem.id)
 
                 Toast.makeText(requireContext(), "Bought!", Toast.LENGTH_SHORT).show()
+
+                (activity as? MainActivity)?.refreshUserData()
             } else {
                 Toast.makeText(requireContext(), "Not enough points!", Toast.LENGTH_SHORT).show()
             }

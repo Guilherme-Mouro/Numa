@@ -48,10 +48,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Inicializa Achievements (uma vez)
         initializeAchievements()
 
-        // Inicializa Missões Diárias (Verifica sempre que a app abre)
         initializeDailyQuests()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -72,6 +70,12 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        loadUserDetails(userId)
+    }
+
+    fun refreshUserData() {
+        val sessionManager = SessionManager(this)
+        val userId = sessionManager.getUserId()
         loadUserDetails(userId)
     }
 
@@ -156,9 +160,10 @@ class MainActivity : AppCompatActivity() {
     private fun initializeAchievements() {
         lifecycleScope.launch {
             try {
+                val currentAchievements = database.achievementDao().getAllAchievements()
                 val isInitialized = sharedPref.getBoolean("achievements_initialized", false)
 
-                if (!isInitialized) {
+                if (!isInitialized || currentAchievements.isEmpty()) {
                     Log.d("MainActivity", "Inicializando achievements...")
                     achievementRepository.initializeAchievements()
                     sharedPref.edit {

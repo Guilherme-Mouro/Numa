@@ -52,7 +52,7 @@ class SignUpActivity : AppCompatActivity() {
             val newUser = User(
                 name = binding.edName.text.toString(),
                 streak = 0,
-                points = 0,
+                points = 300,
                 level = 1,
             )
 
