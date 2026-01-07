@@ -24,7 +24,7 @@ class AchievementAdapter(
                 val iconResId = when (achievement.type) {
                     "DAILY_STREAK" -> R.drawable.ic_fire
                     "HABIT_STREAK" -> R.drawable.ic_fire
-                    "COLECIONADOR" -> R.drawable.ic_collection
+                    "COLLECTOR" -> R.drawable.ic_collection
                     "META_CHAMPION" -> R.drawable.ic_trophy
                     "SLEEP" -> R.drawable.ic_moon
                     else -> R.drawable.ic_fire
@@ -34,7 +34,7 @@ class AchievementAdapter(
                 val iconColorResId = when (achievement.type) {
                     "DAILY_STREAK" -> R.color.red
                     "HABIT_STREAK" -> R.color.purple
-                    "COLECIONADOR" -> R.color.light_blue
+                    "COLLECTOR" -> R.color.light_blue
                     "META_CHAMPION" -> R.color.yellow
                     "SLEEP" -> R.color.light_blue
                     else -> R.color.light_grey
@@ -46,7 +46,7 @@ class AchievementAdapter(
                 val backgroundResId = when (achievement.type) {
                     "DAILY_STREAK" -> R.drawable.bg_achievement_red
                     "HABIT_STREAK" -> R.drawable.bg_achievement_purple
-                    "COLECIONADOR" -> R.drawable.bg_achievement_blue
+                    "COLLECTOR" -> R.drawable.bg_achievement_blue
                     "META_CHAMPION" -> R.drawable.bg_achievement_gold
                     "SLEEP" -> R.drawable.bg_achievement_darkblue
                     else -> R.drawable.bg_achievement_red

@@ -45,7 +45,7 @@ class HabitProgressionActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 val habit = db.habitDao().getHabitById(habitId)!!
 
-                // ✅ Para hábitos recorrentes, NÃO muda o state, só o lastCompletedDate
+                // Para hábitos recorrentes, NÃO muda o state, só o lastCompletedDate
                 // Para hábitos de data específica, muda o state
                 val updatedHabit = if (habit.isRecurring) {
                     habit.copy(

@@ -51,6 +51,7 @@ class CheckAchievementRepository(
 
         // DAILY STREAK
         if (user.streak >= 1) checkAndUnlockAchievement(userId, "DAILY_STREAK", 1)
+        if (user.streak >= 3) checkAndUnlockAchievement(userId, "DAILY_STREAK", 3)
         if (user.streak >= 7) checkAndUnlockAchievement(userId, "DAILY_STREAK", 7)
         if (user.streak >= 30) checkAndUnlockAchievement(userId, "DAILY_STREAK", 30)
         if (user.streak >= 90) checkAndUnlockAchievement(userId, "DAILY_STREAK", 90)
@@ -71,11 +72,11 @@ class CheckAchievementRepository(
         }
 
         // COLECIONADOR
-        if (habits.size >= 1) checkAndUnlockAchievement(userId, "COLECIONADOR", 1)
-        if (habits.size >= 3) checkAndUnlockAchievement(userId, "COLECIONADOR", 3)
-        if (habits.size >= 10) checkAndUnlockAchievement(userId, "COLECIONADOR", 10)
-        if (habits.size >= 20) checkAndUnlockAchievement(userId, "COLECIONADOR", 20)
-        if (habits.size >= 50) checkAndUnlockAchievement(userId, "COLECIONADOR", 50)
+        if (habits.size >= 1) checkAndUnlockAchievement(userId, "COLLECTOR", 1)
+        if (habits.size >= 3) checkAndUnlockAchievement(userId, "COLLECTOR", 3)
+        if (habits.size >= 10) checkAndUnlockAchievement(userId, "COLLECTOR", 10)
+        if (habits.size >= 20) checkAndUnlockAchievement(userId, "COLLECTOR", 20)
+        if (habits.size >= 50) checkAndUnlockAchievement(userId, "COLLECTOR", 50)
 
         // SLEEP
         val sleepCount = sleepDao.getAllSleepForUser(userId).size

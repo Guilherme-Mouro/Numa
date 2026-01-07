@@ -48,6 +48,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
         initializeAchievements()
 
         initializeDailyQuests()
@@ -175,6 +176,30 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 Log.e("MainActivity", "❌ Erro ao inicializar achievements: ${e.message}")
+            }
+        }
+    }
+
+    private fun hardResetAchievements() {
+        lifecycleScope.launch {
+            try {
+                // 1. Apagar todos os dados da tabela
+                database.achievementDao().deleteAllAchievements()
+                Log.w("MainActivity", "🚨 Tabela de achievements limpa.")
+
+                // 2. Resetar a flag nas SharedPreferences
+                // Isto é CRUCIAL: se não fizeres isto, o initializeAchievements()
+                // vai achar que já está tudo pronto e não recria os dados.
+                sharedPref.edit {
+                    putBoolean("achievements_initialized", false)
+                }
+                Log.w("MainActivity", "🚨 Flag de inicialização resetada.")
+
+                // 3. (Opcional) Forçar a reinicialização imediata para veres logo o resultado
+                initializeAchievements()
+
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Erro ao resetar achievements: ${e.message}")
             }
         }
     }

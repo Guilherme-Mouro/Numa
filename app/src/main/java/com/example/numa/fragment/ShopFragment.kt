@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.numa.DailyQuestRepository
 import com.example.numa.R
 import com.example.numa.activity.MainActivity
 import com.example.numa.adapter.ShopItemAdapter
@@ -159,6 +160,9 @@ class ShopFragment : Fragment() {
 
             if (user.points >= shopItem.price) {
                 db.userItemDao().insertUserItem(UserItem(userId = userId, itemId = shopItem.id))
+
+                val questRepo = DailyQuestRepository(db.dailyQuestDao())
+                questRepo.incrementProgress(userId, DailyQuestRepository.TYPE_SHOP)
 
                 UserRepository(db.userDao()).addXpAndPoints(userId, 0, -shopItem.price)
 

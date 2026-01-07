@@ -19,6 +19,15 @@ class AchievementRepository(private val achievementDao: AchievementDao) {
                 ),
             Achievement(
                 type = "DAILY_STREAK",
+                level = 3,
+                title = "3 days journey",
+                description = "Maintain 3 days with ≥1 habit",
+                points = 30,
+                experience = 20,
+
+                ),
+            Achievement(
+                type = "DAILY_STREAK",
                 level = 7,
                 title = "Burning Week",
                 description = "Maintain 7 days with ≥1 habit",

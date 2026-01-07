@@ -44,19 +44,19 @@ class HabitAdapter(
         holder.streak.text = "${habit.streak} days"
         holder.xp.text = "+${habit.experience} XP"
 
-        // ✅ Usar a data selecionada, não LocalDate.now()
+        //Usar a data selecionada, não LocalDate.now()
         val selectedDayStart = selectedDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
         val selectedDayEnd = selectedDate.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
 
         val isCompletedToday = if (habit.isRecurring) {
-            // ✅ Verifica se foi completado no dia selecionado
+            //Verifica se foi completado no dia selecionado
             habit.lastCompletedDate >= selectedDayStart && habit.lastCompletedDate < selectedDayEnd
         } else {
             // Para hábitos de data específica, usa o campo state
             habit.state == "complete"
         }
 
-        // ✅ Aplicar a aparência baseado em isCompletedToday
+        // Aplicar a aparência baseado em isCompletedToday
         if (isCompletedToday) {
             holder.card.strokeColor = ContextCompat.getColor(holder.itemView.context, R.color.green)
             holder.card.strokeWidth = 15
@@ -70,7 +70,7 @@ class HabitAdapter(
             holder.layoutXp.visibility = View.GONE
             holder.layoutDuration.visibility = View.GONE
         } else {
-            // ✅ Reset da aparência para hábitos não completados
+            // Reset da aparência para hábitos não completados
             holder.card.strokeWidth = 0
             holder.title.paintFlags = 0 // Remove o strikethrough
 
