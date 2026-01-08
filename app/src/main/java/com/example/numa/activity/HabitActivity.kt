@@ -22,6 +22,8 @@ class HabitActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val habitId = intent.getIntExtra("habitId", -1)
+        // Receber a data selecionada (padrão = 0 se não vier)
+        val selectedDateMillis = intent.getLongExtra("selectedDate", 0L)
 
         binding.btnBack.setOnClickListener {
             finish()
@@ -30,16 +32,16 @@ class HabitActivity : AppCompatActivity() {
         binding.btnStartHabit.setOnClickListener {
             lifecycleScope.launch {
                 val intent = Intent(this@HabitActivity, HabitProgressionActivity::class.java)
-                intent.putExtra("habitId",habitId)
+                intent.putExtra("habitId", habitId)
                 startActivity(intent)
             }
             finish()
         }
 
-        loadHabit(habitId)
+        loadHabit(habitId, selectedDateMillis)
     }
 
-    private fun loadHabit(habitId: Int?) {
+    private fun loadHabit(habitId: Int?, selectedDateMillis: Long) {
         lifecycleScope.launch {
             habitId?.let {
                 val habit = db.habitDao().getHabitById(habitId)
@@ -50,42 +52,58 @@ class HabitActivity : AppCompatActivity() {
                     binding.tvXp.text = habit.experience.toString() + " XP"
                     binding.tvPoints.text = habit.streak.toString() + if (habit.streak == 1) " Day" else " Days"
 
-                    // 1. Obter dados de Hoje
+                    // 1. Usar a data SELECIONADA em vez de sempre "hoje"
+                    val selectedDate = if (selectedDateMillis > 0) {
+                        Instant.ofEpochMilli(selectedDateMillis)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                    } else {
+                        LocalDate.now() // Fallback para hoje se não vier data
+                    }
+
                     val today = LocalDate.now()
-                    val currentDayOfWeek = today.dayOfWeek.name
+                    val selectedDayOfWeek = selectedDate.dayOfWeek.name
 
-                    // Timestamp do início de hoje (00:00:00) para comparação
-                    val todayStart = today.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
-
-                    // 2. Verificar se está AGENDADO para hoje
-                    var isScheduledForToday = false
+                    // 2. Verificar se está AGENDADO para a data SELECIONADA
+                    var isScheduledForSelectedDate = false
 
                     if (habit.isRecurring) {
-                        if (habit.dayOfWeek == "EVERYDAY" || habit.dayOfWeek == currentDayOfWeek) {
-                            isScheduledForToday = true
+                        if (habit.dayOfWeek == "EVERYDAY" || habit.dayOfWeek == selectedDayOfWeek) {
+                            isScheduledForSelectedDate = true
                         }
                     } else {
                         habit.specificDate?.let { millis ->
-                            val habitDate = org.threeten.bp.Instant.ofEpochMilli(millis)
+                            val habitDate = Instant.ofEpochMilli(millis)
                                 .atZone(ZoneId.systemDefault())
                                 .toLocalDate()
-                            if (habitDate.isEqual(today)) {
-                                isScheduledForToday = true
+                            if (habitDate.isEqual(selectedDate)) {
+                                isScheduledForSelectedDate = true
                             }
                         }
                     }
 
-                    // 3. Verificar se JÁ FOI COMPLETADO hoje
-                    // Se a data da última conclusão for maior que o início de hoje, já foi feito.
-                    val isCompletedToday = habit.lastCompletedDate >= todayStart
+                    // 3. Verificar se JÁ FOI COMPLETADO HOJE (não na data selecionada, mas HOJE)
+                    val isCompletedToday = if (habit.lastCompletedDate > 0) {
+                        val completedDate = Instant.ofEpochMilli(habit.lastCompletedDate)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
 
-                    // 4. Lógica Final:
-                    // Mostra o botão APENAS SE: (É para hoje) E (Ainda NÃO foi completado)
-                    if (isScheduledForToday && !isCompletedToday) {
+                        completedDate.isEqual(today)
+                    } else {
+                        false
+                    }
+
+                    // 4. Lógica Final
+                    // O botão só aparece se:
+                    // - Está agendado para a data selecionada
+                    // - A data selecionada É HOJE
+                    // - E ainda NÃO foi completado hoje
+                    val isSelectedDateToday = selectedDate.isEqual(today)
+
+                    if (isScheduledForSelectedDate && isSelectedDateToday && !isCompletedToday) {
                         binding.btnStartHabit.visibility = View.VISIBLE
                     } else {
                         binding.btnStartHabit.visibility = View.GONE
-
                     }
                 }
             }

@@ -12,14 +12,15 @@ interface HabitDao {
     @Query("SELECT * FROM habit WHERE id = :habitId")
     suspend fun getHabitById(habitId: Int): Habit?
 
-    // ✅ Query atualizada: Verifica se o hábito NÃO foi completado HOJE
+    // Query corrigida: Agora verifica corretamente se o hábito foi completado HOJE
     @Query("""
     SELECT * FROM habit 
     WHERE userId = :userId AND (
         (isRecurring = 1 AND (dayOfWeek = :dayOfWeek OR dayOfWeek = 'EVERYDAY') 
          AND (lastCompletedDate < :todayStart OR lastCompletedDate = 0))
         OR
-        (isRecurring = 0 AND specificDate = :specificDate AND state = 'incomplete')
+        (isRecurring = 0 AND specificDate = :specificDate 
+         AND (lastCompletedDate < :todayStart OR lastCompletedDate = 0))
     )
 """)
     suspend fun getHabitsForDate(
@@ -29,14 +30,15 @@ interface HabitDao {
         todayStart: Long // Timestamp do início do dia (00:00:00)
     ): List<Habit>
 
-    // ✅ Query para hábitos completados HOJE
+    // Query para hábitos completados HOJE
     @Query("""
     SELECT * FROM habit 
     WHERE userId = :userId AND (
         (isRecurring = 1 AND (dayOfWeek = :dayOfWeek OR dayOfWeek = 'EVERYDAY')
          AND lastCompletedDate >= :todayStart)
         OR
-        (isRecurring = 0 AND specificDate = :specificDate AND state = 'complete')
+        (isRecurring = 0 AND specificDate = :specificDate 
+         AND lastCompletedDate >= :todayStart)
     )
 """)
     suspend fun getCompletedHabitsForDate(

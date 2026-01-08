@@ -1,7 +1,6 @@
 package com.example.numa.fragment
 
 import android.content.Intent
-import android.opengl.Visibility
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,8 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.room.Room
-import com.example.numa.DataBase
 import com.example.numa.activity.HabitActivity
 import com.example.numa.R
 import com.example.numa.adapter.HabitAdapter
@@ -25,7 +22,6 @@ import com.example.numa.util.SessionManager
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.threeten.bp.DayOfWeek
 import org.threeten.bp.LocalDate
 import org.threeten.bp.ZoneId
@@ -45,11 +41,9 @@ class HabitFragment : Fragment() {
     ): View {
         _binding = FragmentHabitBinding.inflate(inflater, container, false)
 
-        // Creating the sessionManager variable to be able to check the user Id later
         val sessionManager = SessionManager(requireContext())
         val userId = sessionManager.getUserId()
 
-        //Handling the add Habit button
         binding.btnAddHabit.setOnClickListener {
             val bottomSheet = AddHabitFragment()
             bottomSheet.show(parentFragmentManager, "AddHabitBottomSheet")
@@ -72,7 +66,6 @@ class HabitFragment : Fragment() {
         binding.rvWeek.adapter = weekAdapter
 
         loadHabitsProgress(userId)
-
         loadHabitsForDate(selectedDay, userId)
         setupSwipeToDelete(userId)
 
@@ -84,7 +77,6 @@ class HabitFragment : Fragment() {
             userId?.let {
                 val dayOfWeek = date.dayOfWeek.name
                 val specificDate = date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
-
                 val todayStart = date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000
 
                 val habits = db.habitDao().getHabitsForDate(
@@ -105,21 +97,20 @@ class HabitFragment : Fragment() {
                     { habit ->
                         val intent = Intent(requireContext(), HabitActivity::class.java)
                         intent.putExtra("habitId", habit.id)
+                        // ✅ Passar a data selecionada para o HabitActivity
+                        intent.putExtra("selectedDate", date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000)
                         startActivity(intent)
                     },
-                    selectedDay
+                    selectedDay // ✅ Passar selectedDay para o adapter
                 )
                 binding.rvHabits.adapter = habitsAdapter
             }
         }
     }
 
-
-
     private fun loadHabitsProgress(userId: Int?) {
         lifecycleScope.launch {
             val today = LocalDate.now().dayOfWeek.name
-
             val todayStart = LocalDate.now()
                 .atStartOfDay(ZoneId.systemDefault())
                 .toEpochSecond() * 1000
