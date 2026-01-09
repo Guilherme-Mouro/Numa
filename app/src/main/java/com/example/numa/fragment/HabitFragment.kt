@@ -97,11 +97,10 @@ class HabitFragment : Fragment() {
                     { habit ->
                         val intent = Intent(requireContext(), HabitActivity::class.java)
                         intent.putExtra("habitId", habit.id)
-                        // ✅ Passar a data selecionada para o HabitActivity
                         intent.putExtra("selectedDate", date.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000)
                         startActivity(intent)
                     },
-                    selectedDay // ✅ Passar selectedDay para o adapter
+                    selectedDay
                 )
                 binding.rvHabits.adapter = habitsAdapter
             }
@@ -115,25 +114,33 @@ class HabitFragment : Fragment() {
                 .atStartOfDay(ZoneId.systemDefault())
                 .toEpochSecond() * 1000
 
+            val todaySpecificDate = LocalDate.now()
+                .atStartOfDay(ZoneId.systemDefault())
+                .toEpochSecond() * 1000
+
             userId?.let {
-                val habits = db.habitDao().getHabitsForDate(
+                // Buscar hábitos NÃO completados de hoje
+                val incompleteHabits = db.habitDao().getHabitsForDate(
                     today,
-                    1,
+                    todaySpecificDate,
                     userId,
                     todayStart
                 )
 
-                if (habits.isNotEmpty()) {
-                    val totalHabits = habits.size
-                    var totalCompletedHabits = 0
+                //  Buscar hábitos COMPLETADOS de hoje
+                val completedHabits = db.habitDao().getCompletedHabitsForDate(
+                    today,
+                    todaySpecificDate,
+                    userId,
+                    todayStart
+                )
 
-                    for (habit in habits) {
-                        if (habit.lastCompletedDate >= todayStart) {
-                            totalCompletedHabits++
-                        }
-                    }
+                // Total = completos + incompletos
+                val totalHabits = incompleteHabits.size + completedHabits.size
 
-                    val habitsProgress = totalCompletedHabits * 100 / totalHabits
+                if (totalHabits > 0) {
+                    val totalCompletedHabits = completedHabits.size
+                    val habitsProgress = (totalCompletedHabits * 100) / totalHabits
 
                     val green = ContextCompat.getColor(requireContext(), R.color.green)
                     val greenBar = ContextCompat.getDrawable(
@@ -159,6 +166,8 @@ class HabitFragment : Fragment() {
                     binding.tvPercentage.text = "$habitsProgress%"
                     binding.tvHabitsNumber.text =
                         "$totalCompletedHabits of $totalHabits habits completed"
+
+                    binding.layoutProgress.visibility = View.VISIBLE
                 } else {
                     binding.layoutProgress.visibility = View.GONE
                 }
